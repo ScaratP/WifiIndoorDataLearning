@@ -1,0 +1,23 @@
+{
+  "n_rss": 237,
+  "n_buildings": 3,
+  "n_floors": 5,
+  "num_examples": 63294,
+  "num_test_examples": 15824,
+  "lo_mean": 54.68629837036133,
+  "lo_std": 16.228200912475586,
+  "la_mean": 63.290611267089844,
+  "la_std": 20.596237182617188,
+  "building_mapping": {
+    "sea": 0,
+    "seb": 1,
+    "sec": 2
+  },
+  "floor_mapping": {
+    "1": 0,
+    "2": 1,
+    "3": 2,
+    "4": 3,
+    "5": 4
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "building_classifier": {
+    "accuracy": 1.0
+  },
+  "floor_classifier": {
+    "accuracy": 0.9523809523809523
+  },
+  "position_predictors": {
+    "SE1_F1": {
+      "mse": 144.84070974381575,
+      "mean_distance_error": 12.54825755883899,
+      "n_samples": 49
+    },
+    "SE2_F2": {
+      "mse": 122.43662939101638,
+      "mean_distance_error": 12.579068229525193,
+      "n_samples": 54
+    }
+  }
+}
