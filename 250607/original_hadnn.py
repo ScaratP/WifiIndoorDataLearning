@@ -136,7 +136,7 @@ def advanced_data_preprocessing(rss_data):
     
     return normalized_data, stability_score
 
-def train_enhanced_model(hadnn_data_dir, output_model_dir):
+def train_enhanced_model(hadnn_data_dir, output_model_dir="./models"):
     """訓練增強型 HADNN 模型"""
     # 載入數據
     train_x = np.load(os.path.join(hadnn_data_dir, 'train_x.npy'))
@@ -212,12 +212,7 @@ def train_enhanced_model(hadnn_data_dir, output_model_dir):
     
     # 設置回調函數
     callbacks = [
-        EarlyStopping(
-            monitor='val_building_output_accuracy',
-            patience=15,
-            restore_best_weights=True,
-            verbose=1  # 添加 verbose=1 以輸出早停資訊
-        ),
+        # EarlyStopping 回調已移除，模型將訓練完所有指定的 epochs
         ReduceLROnPlateau(
             monitor='val_building_output_accuracy',
             factor=0.5,
@@ -271,8 +266,31 @@ def train_enhanced_model(hadnn_data_dir, output_model_dir):
     
     # 儲存模型
     if not os.path.exists(output_model_dir):
-        os.makedirs(output_model_dir)
-    model.save(os.path.join(output_model_dir, 'enhanced_hadnn_model.h5'))
+        os.makedirs(output_model_dir, exist_ok=True)
+    
+    # 使用Python檔案名稱作為模型檔名
+    model_name = os.path.splitext(os.path.basename(__file__))[0]
+    
+    # 儲存 H5 格式
+    model_h5_path = os.path.join(output_model_dir, f'{model_name}.h5')
+    model.save(model_h5_path)
+    print(f"模型已保存為 .h5 格式: {model_h5_path}")
+    
+    # 將模型轉換為 TFLite 格式
+    print("正在轉換模型為 TensorFlow Lite 格式...")
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    try:
+        tflite_model = converter.convert()
+        
+        # 保存 TFLite 模型
+        tflite_path = os.path.join(output_model_dir, f'{model_name}.tflite')
+        with open(tflite_path, 'wb') as f:
+            f.write(tflite_model)
+        print(f"TensorFlow Lite 模型已儲存於: {tflite_path}")
+    except Exception as e:
+        print(f"TFLite 轉換失敗: {e}")
+        print("請檢查模型結構是否適合TFLite轉換")
     
     # 儲存模型評估結果
     with open(os.path.join(output_model_dir, 'model_results.txt'), 'w') as f:
@@ -308,8 +326,8 @@ def analyze_building_misclassifications(model, test_x, test_b, test_names=None):
 
 if __name__ == "__main__":
     print("=== 開始增強型 HADNN 模型訓練 ===")
-    hadnn_data_dir = "./hadnn_data"  # 修正路徑
-    output_model_dir = "./enhanced_models"  # 修正路徑
+    hadnn_data_dir = "./hadnn_data"
+    output_model_dir = "./models"
     
     model, history = train_enhanced_model(hadnn_data_dir, output_model_dir)
     

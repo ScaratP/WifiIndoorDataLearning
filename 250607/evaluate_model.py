@@ -42,7 +42,7 @@ else:
         plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial Unicode MS', 'sans-serif']
 
 # Import AttentionLayer class
-from model_improvements import AttentionLayer
+from original_hadnn import AttentionLayer
 
 def load_model_and_data(model_path, hadnn_data_dir):
     """Load model and test data"""
