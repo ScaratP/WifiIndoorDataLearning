@@ -15,18 +15,34 @@ def main():
     print("=== NTTU WiFi 資料預處理 ===")
     
     # 設定路徑
-    scan13_folder = "../points/scan13"
+    scan13_folder = "../points/scan13/NTTUSEWifiIndoorPoints"
     processed_dir = "../processed_data"
     hadnn_dir = "../hadnn_data"
     
     # 設定目標 SSID
-    target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam'}
+    target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam', 'nttu'}
     
     print(f"1. 從 {scan13_folder} 提取資料...")
     
     # 步驟 1: 提取並過濾資料
-    extracted_data = extract_wifi_data_with_filter(scan13_folder, target_ssids)
+    extracted_data, file_info = extract_wifi_data_with_filter(scan13_folder, target_ssids)
+    
+    # 印出檔案處理資訊
+    print(f"   處理了 {file_info['total_files']} 個檔案")
+    print(f"   總記錄數: {file_info['total_records']}")
+    print(f"   有效記錄數: {file_info['valid_records']}")
     print(f"   提取了 {len(extracted_data)} 個參考點")
+    
+    print("\n   處理的檔案詳細資訊:")
+    for file_stat in file_info['processed_files']:
+        if 'error' in file_stat:
+            print(f"     ❌ {file_stat['filename']} (錯誤: {file_stat['error']})")
+        else:
+            file_size_mb = file_stat['file_size'] / (1024 * 1024)
+            print(f"     ✅ {file_stat['filename']} - "
+                  f"檔案大小: {file_size_mb:.2f}MB, "
+                  f"總記錄: {file_stat['total_records']}, "
+                  f"有效記錄: {file_stat['valid_records']}")
     
     # 步驟 2: 轉換為向量格式
     print("2. 轉換為向量格式...")
@@ -193,15 +209,11 @@ def analyze_data_quality(dataset, output_dir):
     print(f"  - 建築物樣本數平衡度: {1/imbalance_ratio:.2f} (1.0 為完全平衡)")
     
     # 找出信號質量最差的建築物
-    worst_building_id = min(building_signal_quality.items(), 
-                           key=lambda x: x[1]['mean_signal'])[0]
-    print(f"  - 信號質量最差的建築物: {worst_building_id}, "
-          f"缺失率: {building_signal_quality[worst_building_id]['missing_rate']:.2%}, "
-          f"平均信號: {building_signal_quality[worst_building_id]['mean_signal']:.1f} dBm")
+    worst_building_id = min(building_signal_quality.items(), key=lambda x: x[1]['mean_signal'])[0]
+    print(f"  - 信號質量最差的建築物: {worst_building_id}, "f"缺失率: {building_signal_quality[worst_building_id]['missing_rate']:.2%}, "f"平均信號: {building_signal_quality[worst_building_id]['mean_signal']:.1f} dBm")
     
     # 用於建築物分類的前5個關鍵 AP
-    print("  - 建築物分類的關鍵 AP 索引:", 
-          [ap['ap_idx'] for ap in importance_scores[:5]])
+    print("  - 建築物分類的關鍵 AP 索引:", [ap['ap_idx'] for ap in importance_scores[:5]])
     
     return analysis_results
 

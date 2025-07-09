@@ -8,60 +8,89 @@ import glob
 def extract_wifi_data_with_filter(folder_path, target_ssids=None):
     """
     從 scan13 資料夾中提取並過濾 WiFi 資料
+    返回: (all_data, file_info)
     """
     if target_ssids is None:
         target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam'}
     
     all_data = []
+    file_info = {
+        'processed_files': [],
+        'total_files': 0,
+        'total_records': 0,
+        'valid_records': 0
+    }
     
     # 讀取所有 JSON 檔案
     json_files = glob.glob(os.path.join(folder_path, '*.json'))
+    file_info['total_files'] = len(json_files)
     
     for json_file in json_files:
-        with open(json_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        file_name = os.path.basename(json_file)
+        file_stats = {
+            'filename': file_name,
+            'total_records': 0,
+            'valid_records': 0,
+            'file_size': os.path.getsize(json_file)
+        }
         
-        for record in data:
-            if not record.get('wifiReadings'):
-                continue
-                
-            # 過濾 SSID 並計算平均值
-            ssid_bssid_data = defaultdict(lambda: {'levels': [], 'bssid': None})
+        try:
+            with open(json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
             
-            for reading in record['wifiReadings']:
-                ssid = reading.get('ssid', '').lower()
-                bssid = reading.get('bssid')
-                level = reading.get('level')
-                
-                if ssid in target_ssids and level is not None:
-                    key = f"{ssid}_{bssid}"
-                    ssid_bssid_data[key]['levels'].append(level)
-                    ssid_bssid_data[key]['bssid'] = bssid
+            file_stats['total_records'] = len(data)
+            file_info['total_records'] += len(data)
             
-            # 計算平均值
-            avg_readings = []
-            for key, data in ssid_bssid_data.items():
-                if data['levels']:
-                    ssid = key.split('_')[0]
-                    avg_readings.append({
-                        'ssid': ssid,
-                        'bssid': data['bssid'],
-                        'avgLevel': sum(data['levels']) / len(data['levels'])
+            for record in data:
+                if not record.get('wifiReadings'):
+                    continue
+                    
+                # 過濾 SSID 並計算平均值
+                ssid_bssid_data = defaultdict(lambda: {'levels': [], 'bssid': None})
+                
+                for reading in record['wifiReadings']:
+                    ssid = reading.get('ssid', '').lower()
+                    bssid = reading.get('bssid')
+                    level = reading.get('level')
+                    
+                    if ssid in target_ssids and level is not None:
+                        key = f"{ssid}_{bssid}"
+                        ssid_bssid_data[key]['levels'].append(level)
+                        ssid_bssid_data[key]['bssid'] = bssid
+                
+                # 計算平均值
+                avg_readings = []
+                for key, data in ssid_bssid_data.items():
+                    if data['levels']:
+                        ssid = key.split('_')[0]
+                        avg_readings.append({
+                            'ssid': ssid,
+                            'bssid': data['bssid'],
+                            'avgLevel': sum(data['levels']) / len(data['levels'])
+                        })
+                
+                if avg_readings:  # 只保留有目標 SSID 的點
+                    all_data.append({
+                        'id': record.get('id'),
+                        'name': record.get('name'),
+                        'x': record.get('x'),
+                        'y': record.get('y'),
+                        'timestamp': record.get('timestamp'),
+                        'imageId': record.get('imageId'),
+                        'scanCount': record.get('scanCount'),
+                        'avgReadings': avg_readings
                     })
+                    file_stats['valid_records'] += 1
+                    file_info['valid_records'] += 1
             
-            if avg_readings:  # 只保留有目標 SSID 的點
-                all_data.append({
-                    'id': record.get('id'),
-                    'name': record.get('name'),
-                    'x': record.get('x'),
-                    'y': record.get('y'),
-                    'timestamp': record.get('timestamp'),
-                    'imageId': record.get('imageId'),
-                    'scanCount': record.get('scanCount'),
-                    'avgReadings': avg_readings
-                })
+            file_info['processed_files'].append(file_stats)
+            
+        except Exception as e:
+            print(f"   警告：無法處理檔案 {file_name}: {str(e)}")
+            file_stats['error'] = str(e)
+            file_info['processed_files'].append(file_stats)
     
-    return all_data
+    return all_data, file_info
 
 def parse_location_info(name):
     """
@@ -114,8 +143,9 @@ if __name__ == "__main__":
     folder_path = "../points/scan13"
     target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam'}
     
-    extracted_data = extract_wifi_data_with_filter(folder_path, target_ssids)
+    extracted_data, file_info = extract_wifi_data_with_filter(folder_path, target_ssids)
     print(f"提取了 {len(extracted_data)} 個參考點")
+    print(f"處理的檔案資訊: {json.dumps(file_info, ensure_ascii=False, indent=2)}")
     
     # 測試位置解析
     for record in extracted_data[:5]:

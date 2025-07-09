@@ -19,7 +19,7 @@ class NTTUDataset:
     def load_and_process_data(self):
         """載入並處理資料"""
         # 讀取主要資料
-        df = pd.read_csv(os.path.join(self.data_path, 'scan13_vector_format.csv'))
+        df = pd.read_csv(os.path.join(self.data_path, 'nttu_wifi_data.csv'))
         
         # 讀取標籤映射
         with open(os.path.join(self.data_path, 'label_mappings.json'), 'r', encoding='utf-8') as f:
