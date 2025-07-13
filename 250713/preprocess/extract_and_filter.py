@@ -11,7 +11,7 @@ def extract_wifi_data_with_filter(folder_path, target_ssids=None):
     返回: (all_data, file_info)
     """
     if target_ssids is None:
-        target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam'}
+        target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam', 'nttu'}
     
     all_data = []
     file_info = {
@@ -152,7 +152,7 @@ def parse_location_info(name):
 if __name__ == "__main__":
     # 測試函數
     folder_path = "../points/scan13"
-    target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam'}
+    target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam', 'nttu'}
     
     extracted_data, file_info = extract_wifi_data_with_filter(folder_path, target_ssids)
     print(f"提取了 {len(extracted_data)} 個參考點")

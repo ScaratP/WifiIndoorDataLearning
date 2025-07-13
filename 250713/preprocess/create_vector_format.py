@@ -10,7 +10,7 @@ def create_vector_format(data, target_ssids=None):
     將資料轉換為向量格式，適用於點分類和位置回歸模型
     """
     if target_ssids is None:
-        target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam'}
+        target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam', 'nttu'}
     
     # 收集所有唯一的 BSSID，按 SSID 分組
     ssid_bssids = defaultdict(set)
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     # 執行資料處理
     folder_path = "../points/scan13"
     output_dir = "../processed_data"
-    target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam'}
+    target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam', 'nttu'}
     
     # 提取資料
     extracted_data = extract_wifi_data_with_filter(folder_path, target_ssids)
