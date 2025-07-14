@@ -373,7 +373,7 @@ callbacks = [
 
 - [TensorFlow 官方文檔](https://tensorflow.org)
 - [Keras 指南](https://keras.io)
-- [專案 GitHub](https://github.com/your-username/wifi-indoor-positioning)
+- [專案 GitHub](https://github.com/ScaratP/WifiIndoorDataLearning)
 
 ---
 
