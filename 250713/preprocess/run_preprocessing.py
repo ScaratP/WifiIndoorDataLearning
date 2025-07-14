@@ -43,7 +43,15 @@ def main():
     vector_data, building_mapping, floor_mapping, point_mapping = create_building_floor_point_labels(vector_data)
     print(f"   建築物: {list(building_mapping.keys())}")
     print(f"   樓層: {list(floor_mapping.keys())}")
-    print(f"   點位: {len(point_mapping)} 個 ({list(point_mapping.keys())[:10]}...)")
+    print(f"   點位: {len(point_mapping)} 個")
+    
+    # 顯示點位類型分佈
+    room_points = [p for p in point_mapping.keys() if 'CORRIDOR' not in p]
+    corridor_points = [p for p in point_mapping.keys() if 'CORRIDOR' in p]
+    print(f"   - 房間點位: {len(room_points)} 個")
+    print(f"   - 走廊點位: {len(corridor_points)} 個")
+    if corridor_points:
+        print(f"   - 走廊點位範例: {corridor_points[:5]}")
     
     # 步驟 4: 儲存為 CSV
     print("4. 儲存為 CSV 格式...")
@@ -57,7 +65,7 @@ def main():
             'point_mapping': point_mapping
         }, f, ensure_ascii=False, indent=2)
     
-    # 步驟 5: 準備 HADNN 格式
+    # 步驟 5: 準備 HADNN 模型格式
     print("5. 準備 HADNN 模型格式...")
     print("   注意：如果看到與縮放相關的警告，系統會嘗試使用更穩健的方法")
     dataset = prepare_for_hadnn(processed_dir, hadnn_dir)
@@ -79,13 +87,11 @@ def main():
     
     # 位置回歸相關統計
     print(f"\n位置回歸統計:")
-    print(f"  原始座標範圍: x=[{dataset.coordinates[:, 0].min():.2f}, {dataset.coordinates[:, 0].max():.2f}], "
-          f"y=[{dataset.coordinates[:, 1].min():.2f}, {dataset.coordinates[:, 1].max():.2f}]")
-    print(f"  標準化後座標範圍: x=[{dataset.train_c[:, 0].min():.2f}, {dataset.train_c[:, 0].max():.2f}], "
-          f"y=[{dataset.train_c[:, 1].min():.2f}, {dataset.train_c[:, 1].max():.2f}]")
+    print(f"  原始座標範圍: x=[{dataset.coordinates[:, 0].min():.2f}, {dataset.coordinates[:, 0].max():.2f}], "f"y=[{dataset.coordinates[:, 1].min():.2f}, {dataset.coordinates[:, 1].max():.2f}]")
+    print(f"  標準化後座標範圍: x=[{dataset.train_c[:, 0].min():.2f}, {dataset.train_c[:, 0].max():.2f}], "f"y=[{dataset.train_c[:, 1].min():.2f}, {dataset.train_c[:, 1].max():.2f}]")
     
-    # 添加數據質量檢查信息
-    print(f"\n資料質量檢查:")
+    # 添加數據品質檢查信息
+    print(f"\n資料品質檢查:")
     missing_percentage = (dataset.rss_data == -100).mean() * 100
     print(f"  訊號缺失比例: {missing_percentage:.2f}%")
     print(f"  RSS 值範圍: {dataset.rss_data.min()} 到 {dataset.rss_data.max()}")
@@ -93,9 +99,10 @@ def main():
     print(f"  標準差接近零的特徵比例: {(np.std(dataset.rss_data, axis=0) < 0.1).mean() * 100:.2f}%")
     
     print("\n模型訓練建議:")
-    print("  1. 點分類模型: 使用 RSS 特徵預測 point_id")
+    print("  1. 點分類模型: 使用 RSS 特徵預測 point_id (包含房間和走廊)")
     print("  2. 位置回歸模型: 使用 RSS 特徵預測 (x, y) 座標")
     print("  3. 階層模型: 先預測建築物，再預測樓層，最後預測精確位置")
+    print("  4. 考慮房間/走廊分類: 走廊通常有更複雜的信號傳播特性")
 
 def analyze_data_quality(dataset, output_dir):
     """執行更深入的資料品質分析，識別可能的問題"""
@@ -207,9 +214,9 @@ def analyze_data_quality(dataset, output_dir):
     print("\n資料品質分析摘要:")
     print(f"  - 建築物樣本數平衡度: {1/imbalance_ratio:.2f} (1.0 為完全平衡)")
     
-    # 找出信號質量最差的建築物
+    # 找出信號品質最差的建築物
     worst_building_id = min(building_signal_quality.items(), key=lambda x: x[1]['mean_signal'])[0]
-    print(f"  - 信號質量最差的建築物: {worst_building_id}, "f"缺失率: {building_signal_quality[worst_building_id]['missing_rate']:.2%}, "f"平均信號: {building_signal_quality[worst_building_id]['mean_signal']:.1f} dBm")
+    print(f"  - 信號品質最差的建築物: {worst_building_id}, "f"缺失率: {building_signal_quality[worst_building_id]['missing_rate']:.2%}, "f"平均信號: {building_signal_quality[worst_building_id]['mean_signal']:.1f} dBm")
     
     # 用於建築物分類的前5個關鍵 AP
     print("  - 建築物分類的關鍵 AP 索引:", [ap['ap_idx'] for ap in importance_scores[:5]])
@@ -217,5 +224,4 @@ def analyze_data_quality(dataset, output_dir):
     return analysis_results
 
 if __name__ == "__main__":
-    main()
     main()

@@ -95,6 +95,7 @@ def extract_wifi_data_with_filter(folder_path, target_ssids=None):
 def parse_location_info(name):
     """
     從位置名稱解析建築物、樓層和房間資訊
+    支援房間號碼格式 (如 sea101) 和走廊格式 (如 sea1)
     返回: (building, floor, room, point_name)
     """
     if not name:
@@ -122,30 +123,23 @@ def parse_location_info(name):
         # 移除建築物前綴
         remaining = name[3:]
         
-        # 嘗試提取完整的房間號碼
+        # 嘗試提取數字
         import re
-        room_match = re.search(r'(\d+)', remaining)
-        if room_match:
-            room_num = int(room_match.group(1))
-            room = room_num
+        number_match = re.search(r'(\d+)', remaining)
+        if number_match:
+            number = int(number_match.group(1))
             
-            # 根據房間號碼推斷樓層
-            if room_num >= 101 and room_num <= 199:
-                floor = 1
-            elif room_num >= 201 and room_num <= 299:
-                floor = 2
-            elif room_num >= 301 and room_num <= 399:
-                floor = 3
-            elif room_num >= 401 and room_num <= 499:
-                floor = 4
-            elif room_num >= 501 and room_num <= 599:
-                floor = 5
+            # 判斷是房間號碼還是走廊編號
+            if number >= 100:
+                # 房間號碼格式 (如 sea101, seb203)
+                room = number
+                floor = max(1, number // 100)
+                point_name = f"{building.upper()}{room:03d}"
             else:
-                # 使用百位數作為樓層，但確保至少是1
-                floor = max(1, room_num // 100)
-            
-            # 建立明確的點名稱
-            point_name = f"{building.upper()}{room_num:03d}"
+                # 走廊格式 (如 sea1, seb2) - 數字直接表示樓層
+                floor = number
+                room = None  # 走廊沒有房間號
+                point_name = f"{building.upper()}{floor}F_CORRIDOR"
     
     return building, floor, room, point_name
 
@@ -156,6 +150,12 @@ if __name__ == "__main__":
     
     extracted_data, file_info = extract_wifi_data_with_filter(folder_path, target_ssids)
     print(f"提取了 {len(extracted_data)} 個參考點")
+    print(f"處理的檔案資訊: {json.dumps(file_info, ensure_ascii=False, indent=2)}")
+    
+    # 測試位置解析
+    for record in extracted_data[:5]:
+        building, floor, room, point_name = parse_location_info(record['name'])
+        print(f"Name: {record['name']}, Building: {building}, Floor: {floor}, Room: {room}, Point Name: {point_name}")
     print(f"處理的檔案資訊: {json.dumps(file_info, ensure_ascii=False, indent=2)}")
     
     # 測試位置解析

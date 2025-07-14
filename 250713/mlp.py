@@ -6,6 +6,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.optimizers import Adam
 import json
 import pickle
+import pandas as pd
 
 # 將 AttentionLayer 類別定義移至檔案頂部，以便其他文件可以直接導入
 class AttentionLayer(layers.Layer):
@@ -395,6 +396,28 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
     mean_error = np.mean(position_errors)
     median_error = np.median(position_errors)
     
+    # 生成評估摘要
+    evaluation_summary = generate_evaluation_summary(
+        'MLP深度學習模型',
+        building_accuracy,
+        floor_accuracy,
+        mean_error,
+        median_error,
+        position_errors,
+        test_b,
+        test_y,
+        building_pred,
+        floor_pred,
+        results
+    )
+    
+    # 儲存評估摘要
+    summary_path = os.path.join(output_dir, 'mlp.txt')
+    with open(summary_path, 'w', encoding='utf-8') as f:
+        f.write(evaluation_summary)
+    
+    print(f"評估摘要已儲存至: {summary_path}")
+    
     # 整理結果，轉換NumPy類型
     results_dict = {
         'building_accuracy': float(building_accuracy),
@@ -410,6 +433,87 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
     
     print(f"MLP深度學習模型訓練和評估完成。模型已保存在 {output_dir}")
     return mlp, results_dict
+
+def generate_evaluation_summary(model_name, building_accuracy, floor_accuracy, 
+                               mean_error, median_error, position_errors, 
+                               test_b, test_y, building_pred, floor_pred, 
+                               model_results):
+    """生成評估摘要"""
+    summary = f"""
+{'='*60}
+{model_name} 評估摘要
+{'='*60}
+生成時間: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+一、模型性能指標
+{'='*40}
+建築物分類準確率: {building_accuracy:.2f}%
+樓層分類準確率: {floor_accuracy:.2f}%
+位置預測平均誤差: {mean_error:.4f} 米
+位置預測中位數誤差: {median_error:.4f} 米
+位置預測標準差: {np.std(position_errors):.4f} 米
+
+二、分類詳細分析
+{'='*40}
+建築物分類統計:
+- 測試樣本數: {len(test_b)}
+- 正確分類數: {np.sum(building_pred == test_b)}
+- 錯誤分類數: {np.sum(building_pred != test_b)}
+- 分類準確率: {building_accuracy:.2f}%
+
+樓層分類統計:
+- 測試樣本數: {len(test_y)}
+- 正確分類數: {np.sum(floor_pred == test_y)}
+- 錯誤分類數: {np.sum(floor_pred != test_y)}
+- 分類準確率: {floor_accuracy:.2f}%
+
+三、位置預測分析
+{'='*40}
+位置誤差統計:
+- 最小誤差: {np.min(position_errors):.4f} 米
+- 最大誤差: {np.max(position_errors):.4f} 米
+- 平均誤差: {mean_error:.4f} 米
+- 中位數誤差: {median_error:.4f} 米
+- 標準差: {np.std(position_errors):.4f} 米
+
+誤差分佈:
+- 誤差 < 1.0 米: {np.sum(position_errors < 1.0)} 個 ({np.sum(position_errors < 1.0)/len(position_errors)*100:.1f}%)
+- 誤差 < 2.0 米: {np.sum(position_errors < 2.0)} 個 ({np.sum(position_errors < 2.0)/len(position_errors)*100:.1f}%)
+- 誤差 < 3.0 米: {np.sum(position_errors < 3.0)} 個 ({np.sum(position_errors < 3.0)/len(position_errors)*100:.1f}%)
+- 誤差 >= 3.0 米: {np.sum(position_errors >= 3.0)} 個 ({np.sum(position_errors >= 3.0)/len(position_errors)*100:.1f}%)
+
+四、模型訓練結果
+{'='*40}
+模型訓練損失值:
+- 總損失: {model_results[0]:.4f}
+- 建築物分類損失: {model_results[1]:.4f}
+- 樓層分類損失: {model_results[2]:.4f}
+- 位置預測損失: {model_results[3]:.4f}
+
+五、綜合評估
+{'='*40}
+綜合得分 (越低越好): {mean_error / (building_accuracy * floor_accuracy / 10000):.4f}
+
+模型表現評級:
+- 建築物分類: {'優秀' if building_accuracy >= 90 else '良好' if building_accuracy >= 80 else '一般' if building_accuracy >= 70 else '需改進'}
+- 樓層分類: {'優秀' if floor_accuracy >= 85 else '良好' if floor_accuracy >= 75 else '一般' if floor_accuracy >= 65 else '需改進'}
+- 位置預測: {'優秀' if mean_error <= 2.0 else '良好' if mean_error <= 3.0 else '一般' if mean_error <= 4.0 else '需改進'}
+
+六、建議與改進方向
+{'='*40}
+"""
+    
+    # 根據結果添加具體建議
+    if building_accuracy < 85:
+        summary += "- 建築物分類準確率偏低，建議增加更多建築物相關的特徵或調整網路結構\n"
+    if floor_accuracy < 80:
+        summary += "- 樓層分類準確率偏低，建議改進樓層特徵提取或增加訓練資料\n"
+    if mean_error > 3.0:
+        summary += "- 位置預測誤差較大，建議調整位置回歸分支的網路結構或損失函數權重\n"
+    
+    summary += f"\n{'='*60}\n報告結束\n{'='*60}"
+    
+    return summary
 
 class MLPPositionModel:
     """MLP深度學習定位模型類別"""

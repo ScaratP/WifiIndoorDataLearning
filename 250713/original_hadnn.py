@@ -292,15 +292,7 @@ def train_enhanced_model(hadnn_data_dir, output_model_dir="./models"):
         print(f"TFLite 轉換失敗: {e}")
         print("請檢查模型結構是否適合TFLite轉換")
     
-    # 儲存模型評估結果
-    with open(os.path.join(output_model_dir, 'model_results.txt'), 'w') as f:
-        f.write("模型評估結果:\n")
-        f.write(f"總損失: {results[0]:.4f}\n")
-        f.write(f"建築物分類損失: {results[1]:.4f}\n")
-        f.write(f"建築物分類準確率: {results[4]:.2%}\n")
-        f.write(f"樓層分類損失: {results[2]:.4f}\n")
-        f.write(f"樓層分類準確率: {results[5]:.2%}\n")
-        f.write(f"位置預測 MSE: {results[3]:.4f}\n")
+
     
     print("模型訓練和評估完成")
     return model, history
