@@ -12,9 +12,7 @@ from matplotlib.font_manager import fontManager
 
 # 檢查可用字型
 def get_available_chinese_font():
-    chinese_fonts = ['Microsoft YaHei', 'SimHei', 'SimSun', 'KaiTi', 'DFKai-SB', 
-                     'Arial Unicode MS', 'Noto Sans CJK TC', 'Noto Sans TC', 
-                     'Noto Sans CJK JP', 'Noto Sans CJK SC']
+    chinese_fonts = ['Microsoft YaHei', 'SimHei', 'SimSun', 'KaiTi', 'DFKai-SB','Arial Unicode MS', 'Noto Sans CJK TC', 'Noto Sans TC','Noto Sans CJK JP', 'Noto Sans CJK SC']
     
     available_fonts = [font.name for font in fontManager.ttflist]
     print("Available fonts:", available_fonts[:10], f"...and {len(available_fonts)-10} more")
