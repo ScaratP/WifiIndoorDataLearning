@@ -4,6 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import Model, layers, regularizers
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.optimizers import Adam
+from tflite_validator import verify_tflite_accuracy, compare_model_sizes
 
 # 將 AttentionLayer 類別定義移至檔案頂部，以便其他文件可以直接導入
 class AttentionLayer(layers.Layer):
@@ -50,39 +51,40 @@ def enhanced_hadnn_model(input_dim, n_buildings, n_floors):
     """改進的 HADNN 模型，加強建築物分類能力"""
     
     # 輸入層
-    inputs = layers.Input(shape=(input_dim,))
+    inputs = layers.Input(shape=(input_dim,), name='input_layer')
     
     # 共享特徵提取層 (更深層網路)
-    x = layers.Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.001))(inputs)
-    x = layers.BatchNormalization()(x)
-    x = layers.Dropout(0.3)(x)
-    x = layers.Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.001))(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Dropout(0.3)(x)
+    x = layers.Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.001), name='shared_dense_1')(inputs)
+    x = layers.BatchNormalization(name='shared_bn_1')(x)
+    x = layers.Dropout(0.3, name='shared_dropout_1')(x)
+    x = layers.Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.001), name='shared_dense_2')(x)
+    x = layers.BatchNormalization(name='shared_bn_2')(x)
+    x = layers.Dropout(0.3, name='shared_dropout_2')(x)
     
     # 注意力機制
-    attention_output, attention_weights = AttentionLayer(128)(x)
+    attention_output, attention_weights = AttentionLayer(128, name='attention_layer')(x)
     
     # 建築物分類分支 (加強此分支)
-    building_features = layers.Dense(128, activation='relu')(attention_output)
-    building_features = layers.BatchNormalization()(building_features)
-    building_features = layers.Dense(64, activation='relu')(building_features)
+    building_features = layers.Dense(128, activation='relu', name='building_dense_1')(attention_output)
+    building_features = layers.BatchNormalization(name='building_bn_1')(building_features)
+    building_features = layers.Dense(64, activation='relu', name='building_dense_2')(building_features)
     building_output = layers.Dense(n_buildings, activation='softmax', name='building_output')(building_features)
     
     # 樓層分類分支 (以建築物分類結果為條件)
-    floor_input = layers.Concatenate()([x, building_features])
-    floor_features = layers.Dense(128, activation='relu')(floor_input)
-    floor_features = layers.BatchNormalization()(floor_features)
-    floor_features = layers.Dense(64, activation='relu')(floor_features)
+    floor_input = layers.Concatenate(name='floor_concat')([x, building_features])
+    floor_features = layers.Dense(128, activation='relu', name='floor_dense_1')(floor_input)
+    floor_features = layers.BatchNormalization(name='floor_bn_1')(floor_features)
+    floor_features = layers.Dense(64, activation='relu', name='floor_dense_2')(floor_features)
     floor_output = layers.Dense(n_floors, activation='softmax', name='floor_output')(floor_features)
     
     # 位置回歸分支 (同時以建築物和樓層為條件)
-    position_input = layers.Concatenate()([x, building_features, floor_features])
-    position_features = layers.Dense(128, activation='relu')(position_input)
-    position_features = layers.BatchNormalization()(position_features)
-    position_features = layers.Dense(64, activation='relu')(position_features)
+    position_input = layers.Concatenate(name='position_concat')([x, building_features, floor_features])
+    position_features = layers.Dense(128, activation='relu', name='position_dense_1')(position_input)
+    position_features = layers.BatchNormalization(name='position_bn_1')(position_features)
+    position_features = layers.Dense(64, activation='relu', name='position_dense_2')(position_features)
     position_output = layers.Dense(2, name='position_output')(position_features)
     
+    # 確保輸出順序一致：建築物、樓層、位置
     model = Model(inputs=inputs, outputs=[building_output, floor_output, position_output])
     
     # 使用自定義損失權重，加重建築物分類權重
@@ -276,23 +278,84 @@ def train_enhanced_model(hadnn_data_dir, output_model_dir="./models"):
     model.save(model_h5_path)
     print(f"模型已保存為 .h5 格式: {model_h5_path}")
     
-    # 將模型轉換為 TFLite 格式
+    # 將模型轉換為 TFLite 格式（使用修正後的設定）
     print("正在轉換模型為 TensorFlow Lite 格式...")
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    
+    # 過濾警告訊息
+    import warnings
+    import logging
+    warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
+    logging.getLogger("tensorflow").setLevel(logging.ERROR)
+    
+    # 清理模型，移除訓練時的狀態
+    model_for_conversion = tf.keras.models.clone_model(model)
+    model_for_conversion.set_weights(model.get_weights())
+    
+    # 重新編譯模型以移除訓練相關的操作
+    model_for_conversion.compile(
+        optimizer='adam',  # 使用簡單的優化器字符串
+        loss={
+            'building_output': 'sparse_categorical_crossentropy',
+            'floor_output': 'sparse_categorical_crossentropy',
+            'position_output': 'mse'
+        }
+    )
+    
+    converter = tf.lite.TFLiteConverter.from_keras_model(model_for_conversion)
+    
+    # 修正：完全避免量化，保持完整精度
+    converter.optimizations = []  # 移除所有優化
+    converter.target_spec.supported_types = [tf.float32]
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,
+        tf.lite.OpsSet.SELECT_TF_OPS  # 支援更多 TensorFlow 操作
+    ]
+    
+    # 設置轉換選項以減少警告
+    converter._experimental_lower_tensor_list_ops = False
+    converter.allow_custom_ops = True
+    
     try:
+        print("正在執行 TFLite 轉換（可能需要一些時間）...")
         tflite_model = converter.convert()
-        
-        # 保存 TFLite 模型
         tflite_path = os.path.join(output_model_dir, f'{model_name}.tflite')
         with open(tflite_path, 'wb') as f:
             f.write(tflite_model)
-        print(f"TensorFlow Lite 模型已儲存於: {tflite_path}")
+        print(f"✅ TensorFlow Lite 模型已儲存於: {tflite_path}")
+        
+        # 驗證轉換是否成功
+        print("驗證 TFLite 模型...")
+        interpreter_test = tf.lite.Interpreter(model_path=tflite_path)
+        interpreter_test.allocate_tensors()
+        print(f"✅ TFLite 模型載入成功，輸入形狀: {interpreter_test.get_input_details()[0]['shape']}")
+        
+        # 使用更多樣本進行驗證
+        print("驗證 TFLite 模型準確性...")
+        verify_success = verify_tflite_accuracy(
+            model, 
+            tflite_path, 
+            test_x_enhanced[:50],  # 增加驗證樣本數
+            test_b[:50], 
+            test_y[:50], 
+            test_c[:50],
+            tolerance=1e-4  # 降低容忍度，要求更高精度
+        )
+        
+        if verify_success:
+            print("✅ TFLite 轉換驗證成功")
+        else:
+            print("⚠️  TFLite 轉換存在精度差異，但模型已保存")
+            
+        compare_model_sizes(model_h5_path, tflite_path)
+        
     except Exception as e:
-        print(f"TFLite 轉換失敗: {e}")
-        print("請檢查模型結構是否適合TFLite轉換")
-    
-
+        print(f"❌ TFLite 轉換失敗: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        # 恢復警告設置
+        warnings.resetwarnings()
+        logging.getLogger("tensorflow").setLevel(logging.INFO)
     
     print("模型訓練和評估完成")
     return model, history

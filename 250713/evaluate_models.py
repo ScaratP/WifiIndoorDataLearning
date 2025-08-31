@@ -54,6 +54,21 @@ def evaluate_model(model, model_name, test_x, test_b, test_y, test_c):
         median_error = np.median(position_errors)
         std_error = np.std(position_errors)
         
+        # 新增：計算條件位置誤差（只針對建築物和樓層都預測正確的樣本）
+        correct_building = (building_pred == test_b)
+        correct_floor = (floor_pred == test_y)
+        correct_both = correct_building & correct_floor
+        
+        if np.any(correct_both):
+            conditional_errors = position_errors[correct_both]
+            conditional_mean_error = np.mean(conditional_errors)
+            conditional_median_error = np.median(conditional_errors)
+            conditional_count = np.sum(correct_both)
+        else:
+            conditional_mean_error = float('inf')
+            conditional_median_error = float('inf')
+            conditional_count = 0
+        
         results = {
             'model_name': model_name,
             'building_accuracy': building_accuracy,
@@ -61,14 +76,18 @@ def evaluate_model(model, model_name, test_x, test_b, test_y, test_c):
             'mean_position_error': mean_error,
             'median_position_error': median_error,
             'std_position_error': std_error,
+            'conditional_mean_position_error': conditional_mean_error,
+            'conditional_median_position_error': conditional_median_error,
+            'conditional_correct_count': conditional_count,
             'position_errors': position_errors.tolist()
         }
         
         print(f"建築物分類準確率: {building_accuracy:.2f}%")
         print(f"樓層分類準確率: {floor_accuracy:.2f}%")
-        print(f"位置預測平均誤差: {mean_error:.4f}")
-        print(f"位置預測中位數誤差: {median_error:.4f}")
-        print(f"位置預測標準差: {std_error:.4f}")
+        print(f"整體位置預測平均誤差: {mean_error:.4f}")
+        print(f"條件位置預測平均誤差: {conditional_mean_error:.4f}")
+        print(f"條件正確樣本數: {conditional_count}/{len(position_errors)} ({conditional_count/len(position_errors)*100:.1f}%)")
+        print(f"位置誤差統計: 中位數={median_error:.4f}, 標準差={std_error:.4f}")
         
         return results
         

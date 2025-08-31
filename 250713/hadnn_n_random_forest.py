@@ -6,6 +6,14 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.optimizers import Adam
 import json
 
+# 添加 TFLite 驗證函數的導入
+try:
+    from tflite_validator import verify_tflite_accuracy, compare_model_sizes
+except ImportError:
+    print("警告: 無法導入 tflite_validator，TFLite 模型驗證將被跳過")
+    verify_tflite_accuracy = None
+    compare_model_sizes = None
+
 # 將 AttentionLayer 類別定義移至檔案頂部，以便其他文件可以直接導入
 class AttentionLayer(layers.Layer):
     """注意力機制層，用於識別重要的 Wi-Fi AP"""
@@ -272,12 +280,88 @@ def train_enhanced_model(hadnn_data_dir, output_model_dir="./models"):
     print(f"模型已保存為 .h5 格式: {h5_path}")
     
     # 儲存模型為 .tflite 格式
-    converter = tf.lite.TFLiteConverter.from_keras_model(nn_model)
-    tflite_model = converter.convert()
-    tflite_path = os.path.join(output_model_dir, f'{model_name}.tflite')
-    with open(tflite_path, 'wb') as f:
-        f.write(tflite_model)
-    print(f"模型已保存為 .tflite 格式: {tflite_path}")
+    print("正在轉換為 TensorFlow Lite 格式...")
+    
+    # 過濾警告訊息
+    import warnings
+    import logging
+    warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
+    logging.getLogger("tensorflow").setLevel(logging.ERROR)
+    
+    # 清理模型，移除訓練時的狀態
+    model_for_conversion = tf.keras.models.clone_model(nn_model)
+    model_for_conversion.set_weights(nn_model.get_weights())
+    
+    # 重新編譯模型以移除訓練相關的操作
+    model_for_conversion.compile(
+        optimizer='adam',
+        loss={
+            'building_output': 'sparse_categorical_crossentropy',
+            'floor_output': 'sparse_categorical_crossentropy',
+            'position_output': 'mse'
+        }
+    )
+    
+    converter = tf.lite.TFLiteConverter.from_keras_model(model_for_conversion)
+    
+    # 修正：完全避免量化，保持完整精度
+    converter.optimizations = []  # 移除所有優化
+    converter.target_spec.supported_types = [tf.float32]
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,
+        tf.lite.OpsSet.SELECT_TF_OPS  # 支援更多 TensorFlow 操作
+    ]
+    
+    # 設置轉換選項以減少警告
+    converter._experimental_lower_tensor_list_ops = False
+    converter.allow_custom_ops = True
+    
+    try:
+        print("正在執行 TFLite 轉換（可能需要一些時間）...")
+        tflite_model = converter.convert()
+        tflite_path = os.path.join(output_model_dir, f'{model_name}.tflite')
+        with open(tflite_path, 'wb') as f:
+            f.write(tflite_model)
+        print(f"✅ 模型已保存為 .tflite 格式: {tflite_path}")
+        
+        # 驗證轉換是否成功
+        print("驗證 TFLite 模型...")
+        interpreter_test = tf.lite.Interpreter(model_path=tflite_path)
+        interpreter_test.allocate_tensors()
+        print(f"✅ TFLite 模型載入成功，輸入形狀: {interpreter_test.get_input_details()[0]['shape']}")
+        
+        # 驗證 TFLite 模型的準確性
+        if verify_tflite_accuracy is not None:
+            print("驗證 TFLite 模型準確性...")
+            verify_success = verify_tflite_accuracy(
+                nn_model, 
+                tflite_path, 
+                test_x_enhanced[:50],  # 增加驗證樣本數
+                test_b[:50], 
+                test_y[:50], 
+                test_c[:50],
+                tolerance=1e-4  # 降低容忍度，要求更高精度
+            )
+            
+            if verify_success:
+                print("✅ TFLite 轉換驗證成功")
+            else:
+                print("⚠️  TFLite 轉換存在精度差異，但模型已保存")
+                
+            # 比較模型大小
+            if compare_model_sizes is not None:
+                compare_model_sizes(h5_path, tflite_path)
+        else:
+            print("⚠️  跳過 TFLite 模型驗證（驗證函數不可用）")
+        
+    except Exception as e:
+        print(f"❌ TFLite 轉換失敗: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        # 恢復警告設置
+        warnings.resetwarnings()
+        logging.getLogger("tensorflow").setLevel(logging.INFO)
     
     # 儲存訓練歷史
     with open(os.path.join(output_model_dir, 'training_history.pkl'), 'wb') as f:
@@ -453,8 +537,8 @@ class IntegratedPositionModel:
         # 加載自定義層
         custom_objects = {'AttentionLayer': AttentionLayer}
         
-        # 載入H5模型
-        model_path = os.path.join(model_dir, 'integrated_model.h5')
+        # 修正：使用正確的模型文件名
+        model_path = os.path.join(model_dir, 'hadnn_n_random_forest.h5')  # 改為正確的文件名
         
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"找不到整合模型: {model_path}")
@@ -514,20 +598,18 @@ class IntegratedPositionModel:
 def create_integrated_positioning_model(hadnn_data_dir, output_model_dir):
     """建立並訓練整合式定位模型，並返回IntegratedPositionModel實例"""
     model, _ = train_enhanced_model(hadnn_data_dir, output_model_dir)
-    
-    # 創建整合式定位模型實例
     integrated_model = IntegratedPositionModel(model)
     return integrated_model
-    
+
 if __name__ == "__main__":
     print("=== 開始整合式深度學習模型訓練 ===")
     hadnn_data_dir = "./hadnn_data"
     output_model_dir = "./models"
-    
-    # 訓練模型
+
+    # 修正：只調用一次訓練函數
     model, history = train_enhanced_model(hadnn_data_dir, output_model_dir)
-    
-    # 創建整合式定位模型實例
-    integrated_model = create_integrated_positioning_model(hadnn_data_dir, output_model_dir)
-    
+
+    # 使用已訓練好的模型創建IntegratedPositionModel實例
+    integrated_model = IntegratedPositionModel(model)
+
     print("整合式定位模型創建完成")

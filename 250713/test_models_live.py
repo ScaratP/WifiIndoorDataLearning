@@ -200,14 +200,11 @@ class ModelPredictor:
         # 確保輸入數據格式正確
         input_shape = input_details[0]['shape']
         if input_data.shape != (1, input_shape[1]):
-            print(f"警告: 輸入形狀不匹配，調整大小從 {input_data.shape} 到 {(1, input_shape[1])}")
+            print(f"調整輸入形狀從 {input_data.shape} 到 {(1, input_shape[1])}")
             
-            # 如果輸入形狀不匹配，嘗試調整
             if input_data.shape[1] > input_shape[1]:
-                # 截斷
                 input_data = input_data[:, :input_shape[1]]
             elif input_data.shape[1] < input_shape[1]:
-                # 補零
                 padded_input = np.zeros((1, input_shape[1]))
                 padded_input[:, :input_data.shape[1]] = input_data
                 input_data = padded_input
@@ -222,40 +219,64 @@ class ModelPredictor:
         outputs = []
         for output_detail in output_details:
             outputs.append(interpreter.get_tensor(output_detail['index']))
+        
+        # 智能輸出映射 - 基於輸出名稱和形狀
+        building_idx = floor_idx = position_idx = None
+        
+        # 首先嘗試基於輸出名稱映射
+        for i, detail in enumerate(output_details):
+            name = detail.get('name', '').lower()
+            if 'building' in name:
+                building_idx = i
+            elif 'floor' in name:
+                floor_idx = i
+            elif 'position' in name:
+                position_idx = i
+        
+        # 如果名稱映射失敗，使用形狀映射
+        if building_idx is None or floor_idx is None or position_idx is None:
+            output_shapes = [detail['shape'][1] if len(detail['shape']) > 1 else 1 for detail in output_details]
             
+            # 假設建築物類別較少(3-5個)，樓層較多，位置是2個坐標
+            for i, shape in enumerate(output_shapes):
+                if shape >= 3 and shape <= 5 and building_idx is None:
+                    building_idx = i
+                elif shape == 2 and position_idx is None:
+                    position_idx = i
+                elif shape > 5 and floor_idx is None:
+                    floor_idx = i
+        
+        # 最後的預設映射
+        if building_idx is None:
+            building_idx = 0
+        if floor_idx is None:
+            floor_idx = 1 if len(output_details) > 1 else 0
+        if position_idx is None:
+            position_idx = 2 if len(output_details) > 2 else 1
+        
         # 解析預測結果
-        if len(output_details) >= 3:
-            # 建築、樓層和位置輸出
-            building_output = outputs[0]
-            floor_output = outputs[1]
-            position_output = outputs[2]
-            
-            building_pred = np.argmax(building_output[0]) if building_output.shape[-1] > 1 else None
-            floor_pred = np.argmax(floor_output[0]) if floor_output.shape[-1] > 1 else None
-            position_pred = position_output[0]
-            
-            return building_pred, floor_pred, position_pred
+        building_pred = None
+        floor_pred = None
+        position_pred = None
         
-        elif len(output_details) == 2:
-            # 樓層和位置輸出
-            floor_output = outputs[0]
-            position_output = outputs[1]
-            
-            floor_pred = np.argmax(floor_output[0]) if floor_output.shape[-1] > 1 else None
-            position_pred = position_output[0]
-            
-            return None, floor_pred, position_pred
+        if building_idx < len(outputs):
+            building_output = outputs[building_idx][0]
+            if len(building_output) > 1:
+                building_pred = np.argmax(building_output)
         
-        elif len(output_details) == 1:
-            # 只有位置輸出或分類輸出
-            output = outputs[0]
-            
-            if output.shape[-1] == 2:  # 假設為 (x, y) 座標
-                return None, None, output[0]
-            else:  # 假設為分類結果
-                return np.argmax(output[0]), None, None
-            
-        return None, None, None
+        if floor_idx < len(outputs):
+            floor_output = outputs[floor_idx][0]
+            if len(floor_output) > 1:
+                floor_pred = np.argmax(floor_output)
+        
+        if position_idx < len(outputs):
+            position_output = outputs[position_idx][0]
+            if len(position_output) >= 2:
+                position_pred = position_output[:2]
+            else:
+                position_pred = np.array([position_output[0] if len(position_output) > 0 else 0.0, 0.0])
+        
+        return building_pred, floor_pred, position_pred
         
     def preprocess_input(self, bssids, rssis):
         """將輸入的 BSSID 和 RSSI 轉換為模型可用的輸入格式"""
@@ -638,3 +659,25 @@ def interactive_test():
 if __name__ == "__main__":
     print("=== WiFi 室內定位模型測試器 ===")
     interactive_test()
+
+# 計算位置誤差
+position_errors = np.sqrt(np.sum((test_c - position_pred) ** 2, axis=1))
+mean_error = np.mean(position_errors)
+median_error = np.median(position_errors)
+std_error = np.std(position_errors)
+
+results = {
+    'model_name': model_name,
+    'building_accuracy': building_accuracy,
+    'floor_accuracy': floor_accuracy,
+    'mean_position_error': mean_error,
+    'median_position_error': median_error,
+    'std_position_error': std_error,
+    'position_errors': position_errors.tolist()
+}
+
+print(f"建築物分類準確率: {building_accuracy:.2f}%")
+print(f"樓層分類準確率: {floor_accuracy:.2f}%")
+print(f"位置預測平均誤差: {mean_error:.4f} 公尺")
+print(f"位置預測中位數誤差: {median_error:.4f} 公尺")
+print(f"位置預測標準差: {std_error:.4f} 公尺")
