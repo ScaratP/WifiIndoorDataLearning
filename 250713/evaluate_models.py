@@ -141,30 +141,34 @@ def plot_comparison_results(all_results, save_dir="./results"):
     floor_accs = [r['floor_accuracy'] for r in all_results if r is not None]
     mean_errors = [r['mean_position_error'] for r in all_results if r is not None]
     
-    # 繪製準確率比較圖
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
-    
-    # 建築物分類準確率
-    ax1.bar(model_names, building_accs)
-    ax1.set_title('建築物分類準確率')
-    ax1.set_ylabel('準確率 (%)')
-    ax1.tick_params(axis='x', rotation=45)
-    
-    # 樓層分類準確率
-    ax2.bar(model_names, floor_accs)
-    ax2.set_title('樓層分類準確率')
-    ax2.set_ylabel('準確率 (%)')
-    ax2.tick_params(axis='x', rotation=45)
-    
-    # 位置預測誤差
-    ax3.bar(model_names, mean_errors)
-    ax3.set_title('位置預測平均誤差')
-    ax3.set_ylabel('誤差')
-    ax3.tick_params(axis='x', rotation=45)
-    
-    plt.tight_layout()
-    plt.savefig(os.path.join(save_dir, 'model_comparison.png'), dpi=300, bbox_inches='tight')
-    plt.close()
+    try:
+        # 繪製準確率比較圖
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
+        
+        # 建築物分類準確率
+        ax1.bar(model_names, building_accs)
+        ax1.set_title('建築物分類準確率')
+        ax1.set_ylabel('準確率 (%)')
+        ax1.tick_params(axis='x', rotation=45)
+        
+        # 樓層分類準確率
+        ax2.bar(model_names, floor_accs)
+        ax2.set_title('樓層分類準確率')
+        ax2.set_ylabel('準確率 (%)')
+        ax2.tick_params(axis='x', rotation=45)
+        
+        # 位置預測誤差
+        ax3.bar(model_names, mean_errors)
+        ax3.set_title('位置預測平均誤差')
+        ax3.set_ylabel('誤差')
+        ax3.tick_params(axis='x', rotation=45)
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(save_dir, 'model_comparison.png'), dpi=300, bbox_inches='tight')
+    except Exception as e:
+        print(f"繪製比較圖表時發生錯誤: {e}")
+    finally:
+        plt.close()  # 確保圖形被關閉，即使發生例外也會執行
     
     print(f"比較圖表已保存至: {os.path.join(save_dir, 'model_comparison.png')}")
 
@@ -213,6 +217,3 @@ def main():
         print()
     
     print(f"詳細結果已保存至: {results_dir}")
-
-if __name__ == "__main__":
-    main()
