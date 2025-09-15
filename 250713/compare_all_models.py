@@ -7,6 +7,7 @@ import tensorflow as tf
 import pickle
 from sklearn.metrics import accuracy_score, mean_squared_error
 import importlib
+from datetime import datetime  # 新增：時間戳用
 
 # 檢查是否安裝了 tabulate 套件
 TABULATE_AVAILABLE = importlib.util.find_spec("tabulate") is not None
@@ -389,9 +390,23 @@ class ModelComparison:
             building_accuracy = accuracy_score(self.test_b, building_preds)
             try:
                 if hasattr(self, 'test_f'):
-                    floor_accuracy = accuracy_score(self.test_f, floor_preds)
+                    # 修改：只考慮建築物預測正確的樣本計算樓層準確率
+                    correct_building_mask = (building_preds == self.test_b)
+                    if np.any(correct_building_mask):
+                        floor_true = self.test_f[correct_building_mask]
+                        floor_pred = floor_preds[correct_building_mask]
+                        floor_accuracy = accuracy_score(floor_true, floor_pred)
+                    else:
+                        floor_accuracy = 0
                 else:
-                    floor_accuracy = accuracy_score(self.test_y, floor_preds)
+                    # 修改：只考慮建築物預測正確的樣本計算樓層準確率
+                    correct_building_mask = (building_preds == self.test_b)
+                    if np.any(correct_building_mask):
+                        floor_true = self.test_y[correct_building_mask]
+                        floor_pred = floor_preds[correct_building_mask]
+                        floor_accuracy = accuracy_score(floor_true, floor_pred)
+                    else:
+                        floor_accuracy = 0
             except:
                 floor_accuracy = 0
             
@@ -457,7 +472,7 @@ class ModelComparison:
             
             print("模型評估完成:")
             print(f"  建築物分類準確率: {result['building_accuracy'] * 100:.4f}%")
-            print(f"  樓層分類準確率: {result['floor_accuracy'] * 100:.4f}%")
+            print(f"  樓層分類準確率(建築物正確時): {result['floor_accuracy'] * 100:.4f}%")
             print(f"  整體位置預測平均誤差: {result['position_mean_error']:.4f}")
             print(f"  條件位置預測平均誤差: {result['conditional_position_mean_error']:.4f}")
             
@@ -479,29 +494,34 @@ class ModelComparison:
             
         # 定義穩健性測試情境
         robustness_scenarios = {
-            '原始資料': {'noise': 0, 'missing_rate': 0},
-            '高斯雜訊 1dB': {'noise': 1, 'missing_rate': 0},
-            '高斯雜訊 2dB': {'noise': 2, 'missing_rate': 0},
-            '高斯雜訊 3dB': {'noise': 3, 'missing_rate': 0},
-            '高斯雜訊 4dB': {'noise': 4, 'missing_rate': 0},
-            '高斯雜訊 5dB': {'noise': 5, 'missing_rate': 0},
-            '高斯雜訊 6dB': {'noise': 6, 'missing_rate': 0},
-            '高斯雜訊 7dB': {'noise': 7, 'missing_rate': 0},
-            '高斯雜訊 8dB': {'noise': 8, 'missing_rate': 0},
-            '高斯雜訊 9dB': {'noise': 9, 'missing_rate': 0},
-            '高斯雜訊 10dB': {'noise': 10, 'missing_rate': 0},
-            '設備故障 5%': {'noise': 0, 'missing_rate': 0.05},
-            '設備故障 10%': {'noise': 0, 'missing_rate': 0.1},
-            '設備故障 15%': {'noise': 0, 'missing_rate': 0.15},
-            '設備故障 20%': {'noise': 0, 'missing_rate': 0.2},
-            '設備故障 25%': {'noise': 0, 'missing_rate': 0.25},
-            '設備故障 30%': {'noise': 0, 'missing_rate': 0.3},
-            '設備故障 35%': {'noise': 0, 'missing_rate': 0.35},
-            '雜訊 5dB + 故障 10%': {'noise': 5, 'missing_rate': 0.1},
-            '雜訊 10dB + 故障 20%': {'noise': 10, 'missing_rate': 0.2},
-            'test1': {'noise': 0, 'missing_rate': 0},
-            'test2': {'noise': 0, 'missing_rate': 0},
-            'test3': {'noise': 0, 'missing_rate': 0}
+            # '原始資料': {'noise': 0, 'missing_rate': 0},
+            # '高斯雜訊 1dB': {'noise': 1, 'missing_rate': 0},
+            # '高斯雜訊 2dB': {'noise': 2, 'missing_rate': 0},
+            # '高斯雜訊 3dB': {'noise': 3, 'missing_rate': 0},
+            # '高斯雜訊 4dB': {'noise': 4, 'missing_rate': 0},
+            # '高斯雜訊 5dB': {'noise': 5, 'missing_rate': 0},
+            # '高斯雜訊 6dB': {'noise': 6, 'missing_rate': 0},
+            # '高斯雜訊 7dB': {'noise': 7, 'missing_rate': 0},
+            # '高斯雜訊 8dB': {'noise': 8, 'missing_rate': 0},
+            # '高斯雜訊 9dB': {'noise': 9, 'missing_rate': 0},
+            # '高斯雜訊 10dB': {'noise': 10, 'missing_rate': 0},
+            # '設備故障 5%': {'noise': 0, 'missing_rate': 0.05},
+            # '設備故障 10%': {'noise': 0, 'missing_rate': 0.1},
+            # '設備故障 15%': {'noise': 0, 'missing_rate': 0.15},
+            # '設備故障 20%': {'noise': 0, 'missing_rate': 0.2},
+            # '設備故障 25%': {'noise': 0, 'missing_rate': 0.25},
+            # '設備故障 30%': {'noise': 0, 'missing_rate': 0.3},
+            # '設備故障 35%': {'noise': 0, 'missing_rate': 0.35},
+            # '雜訊 1db + 故障 10%': {'noise': 1, 'missing_rate': 0.1},
+            # '雜訊 2db + 故障 10%': {'noise': 2, 'missing_rate': 0.1},
+            # '雜訊 3db + 故障 10%': {'noise': 3, 'missing_rate': 0.1},
+            # '雜訊 4db + 故障 10%': {'noise': 4, 'missing_rate': 0.1},
+            # '雜訊 5dB + 故障 10%': {'noise': 5, 'missing_rate': 0.1},
+            # '雜訊 10dB + 故障 20%': {'noise': 10, 'missing_rate': 0.2}
+            '雜訊 4db + 故障 10%': {'noise': 4, 'missing_rate': 0.1},
+            '雜訊 7db + 故障 10%': {'noise': 7, 'missing_rate': 0.1},
+            '雜訊 10db + 故障 10%': {'noise': 10, 'missing_rate': 0.1},
+            
         }
         
         # 設定多次測試參數
@@ -513,7 +533,7 @@ class ModelComparison:
             print(f"\n--- 執行情境: {scenario_name} ({num_trials}次測試) ---")
             print(f"參數: 雜訊={params['noise']}dB, 故障率={params['missing_rate']:.1%}")
             
-            scenario_results = {}  # 存儲所有試驗結果
+            scenario_results = {}  # 存儲所有試驗結果 (每個模型對應多個 trial)
             
             # 添加檢驗點：為每個情境生成唯一標識符，確保結果不會混淆
             scenario_id = f"{scenario_name}_noise{params['noise']}_missing{params['missing_rate']}"
@@ -552,54 +572,55 @@ class ModelComparison:
                 for model_info in self.models_to_compare:
                     result = self.load_and_evaluate_model(model_info, input_data=corrupted_test_x_enhanced)
                     if result is not None:
-                        # 添加情境ID，確保結果唯一性
                         result['scenario_id'] = scenario_id
                         trial_results[model_info['name']] = result
-            
-            # 合併結果
-            for model_name, result in trial_results.items():
-                if model_name not in scenario_results:
-                    scenario_results[model_name] = []
-                scenario_results[model_name].append(result)
-            
+                        # 新增：在 trial 當下就累積到 scenario_results
+                        if model_info['name'] not in scenario_results:
+                            scenario_results[model_info['name']] = []
+                        scenario_results[model_info['name']].append(result)
+
+            # 移除：原本在這裡才「合併結果」會只留下最後一次 trial
+            # for model_name, result in trial_results.items():
+            #     if model_name not in scenario_results:
+            #         scenario_results[model_name] = []
+            #     scenario_results[model_name].append(result)
+
             # 計算每個模型的平均結果和標準差
             averaged_results = {}
             for model_name, trial_results in scenario_results.items():
                 if not trial_results:
                     continue
-                
-                # 計算各指標的平均值和標準差
-                metrics = ['building_accuracy', 'floor_accuracy', 'position_mean_error', 'position_median_error', 'position_std_error', 'position_rmse','conditional_position_mean_error', 'conditional_position_median_error']
-                
+                metrics = [
+                    'building_accuracy', 'floor_accuracy',
+                    'position_mean_error', 'position_median_error',
+                    'position_std_error', 'position_rmse',
+                    'conditional_position_mean_error', 'conditional_position_median_error'
+                ]
                 averaged_result = {}
                 for metric in metrics:
                     values = []
                     for result in trial_results:
                         val = result.get(metric, 0)
-                        # 處理無限值
                         if val != float('inf') and not np.isnan(val):
                             values.append(val)
-                    
                     if values:
                         averaged_result[metric] = np.mean(values)
                         averaged_result[f'{metric}_std'] = np.std(values) if len(values) > 1 else 0
                     else:
                         averaged_result[metric] = 0
                         averaged_result[f'{metric}_std'] = 0
-                
-                # 處理 conditional_correct_count (整數值)
+
                 correct_counts = [result.get('conditional_correct_count', 0) for result in trial_results]
                 averaged_result['conditional_correct_count'] = int(np.mean(correct_counts))
                 averaged_result['conditional_correct_count_std'] = np.std(correct_counts) if len(correct_counts) > 1 else 0
-                
-                # 保留最後一次的預測結果（用於圖表生成）
+
+                # 調整：保留最後一次預測結果供圖表使用
                 averaged_result['predictions'] = trial_results[-1]['predictions']
-                
-                # 記錄測試次數
+                # 新增：保留每次 trial 的原始指標，供摘要列出每次結果
+                averaged_result['trials'] = trial_results
                 averaged_result['num_trials'] = len(trial_results)
-                
                 averaged_results[model_name] = averaged_result
-            
+
             full_results[scenario_name] = averaged_results
             
             # 顯示此情境的結果摘要
@@ -621,10 +642,12 @@ class ModelComparison:
         
         # 顯示並生成最終報告
         self.display_comparison(full_results)
-        output_dir = './model_comparison250831'
+        output_dir = './model_comparison250902_mix'
         os.makedirs(output_dir, exist_ok=True)
         self.generate_comparison_report(full_results, output_dir)
         self.generate_comparison_charts(full_results, output_dir)
+        # 新增：生成穩健性摘要 Markdown（含每次結果）
+        self.generate_robustness_summary(full_results, output_dir)
         
         print(f"比較報告已生成至: {output_dir}")
 
@@ -688,6 +711,7 @@ class ModelComparison:
             f.write("**說明**：\n")
             f.write("- **整體位置誤差**：所有測試樣本的位置預測誤差\n")
             f.write("- **條件位置誤差**：只針對建築物和樓層都預測正確的樣本計算的位置誤差\n")
+            f.write("- **樓層準確率**：只針對建築物預測正確的樣本計算的樓層分類準確率\n")
             f.write("- **多次測試**：每個情境進行 5 次獨立測試並報告平均值±標準差\n")
             f.write("- **統一測試次數**：即使是原始資料也進行 5 次測試，以評估模型內部隨機性和數值穩定性\n\n")
             
@@ -968,68 +992,68 @@ class ModelComparison:
             all_errors[name] = errors
 
         # 1. 箱型圖 (Box Plot) - 顯示統計分布
-        try:
-            fig = plt.figure(figsize=(14, 8))
-            box_data = [all_errors[name] for name in names]
+        # try:
+        #     fig = plt.figure(figsize=(14, 8))
+        #     box_data = [all_errors[name] for name in names]
             
-            box_plot = plt.boxplot(box_data, labels=names, patch_artist=True, 
-                                  showmeans=True, meanline=True,
-                                  flierprops=dict(marker='o', markerfacecolor='red', markersize=4, alpha=0.5))
+        #     box_plot = plt.boxplot(box_data, labels=names, patch_artist=True, 
+        #                           showmeans=True, meanline=True,
+        #                           flierprops=dict(marker='o', markerfacecolor='red', markersize=4, alpha=0.5))
             
-            # 為箱型圖著色
-            for patch, color in zip(box_plot['boxes'], colors[:len(names)]):
-                patch.set_facecolor(color)
-                patch.set_alpha(0.7)
+        #     # 為箱型圖著色
+        #     for patch, color in zip(box_plot['boxes'], colors[:len(names)]):
+        #         patch.set_facecolor(color)
+        #         patch.set_alpha(0.7)
             
-            plt.xlabel('模型')
-            plt.ylabel('位置預測誤差 (公尺)')
-            plt.title(f'位置預測誤差箱型圖 - {scenario_name}')
-            plt.xticks(rotation=15)
-            plt.grid(axis='y', linestyle='--', alpha=0.7)
+        #     plt.xlabel('模型')
+        #     plt.ylabel('位置預測誤差 (公尺)')
+        #     plt.title(f'位置預測誤差箱型圖 - {scenario_name}')
+        #     plt.xticks(rotation=15)
+        #     plt.grid(axis='y', linestyle='--', alpha=0.7)
             
-            # 添加統計信息
-            for i, name in enumerate(names):
-                errors = all_errors[name]
-                mean_err = np.mean(errors)
-                median_err = np.median(errors)
-                q75_err = np.percentile(errors, 75)
-                q25_err = np.percentile(errors, 25)
+        #     # 添加統計信息
+        #     for i, name in enumerate(names):
+        #         errors = all_errors[name]
+        #         mean_err = np.mean(errors)
+        #         median_err = np.median(errors)
+        #         q75_err = np.percentile(errors, 75)
+        #         q25_err = np.percentile(errors, 25)
                 
-                # 在圖上添加統計信息
-                plt.text(i+1, plt.ylim()[1] * 0.95, 
-                        f'平均: {mean_err:.3f}\n中位數: {median_err:.3f}\nIQR: {q75_err-q25_err:.3f}',
-                        ha='center', va='top', fontsize=8,
-                        bbox=dict(boxstyle='round,pad=0.3', facecolor=colors[i], alpha=0.3))
+        #         # 在圖上添加統計信息
+        #         plt.text(i+1, plt.ylim()[1] * 0.95, 
+        #                 f'平均: {mean_err:.3f}\n中位數: {median_err:.3f}\nIQR: {q75_err-q25_err:.3f}',
+        #                 ha='center', va='top', fontsize=8,
+        #                 bbox=dict(boxstyle='round,pad=0.3', facecolor=colors[i], alpha=0.3))
             
-            plt.tight_layout()
-            plt.savefig(os.path.join(output_dir, f'error_boxplot_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
-        except Exception as e:
-            print(f"箱型圖生成失敗: {e}")
-        finally:
-            plt.close(fig)  # 明確關閉特定圖表
+        #     plt.tight_layout()
+        #     plt.savefig(os.path.join(output_dir, f'error_boxplot_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
+        # except Exception as e:
+        #     print(f"箱型圖生成失敗: {e}")
+        # finally:
+        #     plt.close(fig)  # 明確關閉特定圖表
 
         # 2. 小提琴圖 (Violin Plot) - 顯示密度分布
-        try:
-            fig = plt.figure(figsize=(14, 8))
-            violin_parts = plt.violinplot(box_data, positions=range(1, len(names)+1), 
-                                        showmeans=True, showmedians=True, showextrema=True)
+        # try:
+        #     fig = plt.figure(figsize=(14, 8))
+        #     violin_parts = plt.violinplot(box_data, positions=range(1, len(names)+1), 
+        #                                 showmeans=True, showmedians=True, showextrema=True)
             
-            # 為小提琴圖著色
-            for i, pc in enumerate(violin_parts['bodies']):
-                pc.set_facecolor(colors[i % len(colors)])
-                pc.set_alpha(0.7)
+        #     # 為小提琴圖著色
+        #     for i, pc in enumerate(violin_parts['bodies']):
+        #         pc.set_facecolor(colors[i % len(colors)])
+        #         pc.set_alpha(0.7)
             
-            plt.xticks(range(1, len(names)+1), names, rotation=15)
-            plt.xlabel('模型')
-            plt.ylabel('位置預測誤差 (公尺)')
-            plt.title(f'位置預測誤差密度分布 - {scenario_name}')
-            plt.grid(axis='y', linestyle='--', alpha=0.7)
-            plt.tight_layout()
-            plt.savefig(os.path.join(output_dir, f'error_violin_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
-        except Exception as e:
-            print(f"小提琴圖生成失敗: {e}")
-        finally:
-            plt.close(fig)  # 明確關閉特定圖表
+        #     plt.xticks(range(1, len(names)+1), names, rotation=15)
+        #     plt.xlabel('模型')
+        #     plt.ylabel('位置預測誤差 (公尺)')
+        #     plt.title(f'位置預測誤差密度分布 - {scenario_name}')
+        #     plt.grid(axis='y', linestyle='--', alpha=0.7)
+        #     plt.tight_layout()
+        #     plt.savefig(os.path.join(output_dir, f'error_violin_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
+        # except Exception as e:
+        #     print(f"小提琴圖生成失敗: {e}")
+        # finally:
+        #     plt.close(fig)  # 明確關閉特定圖表
 
         # 3. 累積分布函數 (CDF) - 顯示誤差達到某閾值的百分比
         try:
@@ -1109,7 +1133,7 @@ class ModelComparison:
                 plt.grid(axis='y', linestyle='--', alpha=0.3)
                 
                 # 添加統計信息文字
-                stats_text = f'樣本數: {len(errors)}\n標準差: {np.std(errors):.3f}m\n90%分位: {np.percentile(errors, 90):.3f}m'
+                stats_text = f'樣本數: {len(errors)}\n標準差: {np.std(errors):.3f}m\n90%分位數: {np.percentile(errors, 90):.3f}m'
                 plt.text(0.98, 0.98, stats_text, transform=plt.gca().transAxes, 
                         verticalalignment='top', horizontalalignment='right',
                         bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.8),
@@ -1243,6 +1267,7 @@ class ModelComparison:
             plt.xticks(x + width * (len(all_models) - 1) / 2, scenarios, rotation=15)
             plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
             plt.grid(axis='y', linestyle='--', alpha=0.7)
+
             plt.tight_layout()
             plt.savefig(os.path.join(output_dir, 'robustness_floor_accuracy.svg'), format='svg', bbox_inches='tight')
         except Exception as e:
@@ -1271,7 +1296,7 @@ class ModelComparison:
             plt.tight_layout()
             plt.savefig(os.path.join(output_dir, 'robustness_position_error.svg'), format='svg', bbox_inches='tight')
         except Exception as e:
-            print(f"位置誤差穩健性圖生成失敗: {e}")
+            print(f"位置穩健性圖生成失敗: {e}")
         finally:
             plt.close(fig)  # 明確關閉特定圖表
 
@@ -1316,6 +1341,7 @@ class ModelComparison:
                         scores.append(0.0)
             robustness_scores[model] = scores
 
+        # 繪製穩健性評分圖表
         try:
             plt.figure(figsize=(15, 10))
             width = 0.15
@@ -1339,6 +1365,164 @@ class ModelComparison:
         finally:
             plt.close()
 
+    # 新增：統一計算穩健性分數（供圖與摘要共用）
+    def compute_robustness_scores(self, full_results):
+        """
+        回傳:
+          baseline_scenario: 基準情境名稱
+          scenarios: 情境列表（有序）
+          all_models: 模型名稱列表（排序）
+          robustness_scores: dict[model] -> list[score per scenario]
+        """
+        scenarios = list(full_results.keys())
+        if not scenarios:
+            return None, [], [], {}
+
+        # 優先使用「原始資料」為基準，否則取第一個
+        baseline_scenario = '原始資料' if '原始資料' in scenarios else scenarios[0]
+
+        # 蒐集所有模型
+        all_models = set()
+        for results in full_results.values():
+            all_models.update(results.keys())
+        all_models = sorted(list(all_models))
+
+        robustness_scores = {}
+        for model in all_models:
+            scores = []
+            # 若基準沒有該模型，後續皆為 0
+            if model not in full_results.get(baseline_scenario, {}):
+                scores = [0.0 for _ in scenarios]
+            else:
+                baseline_building_acc = full_results[baseline_scenario][model]['building_accuracy']
+                baseline_floor_acc = full_results[baseline_scenario][model]['floor_accuracy']
+                baseline_position_error = full_results[baseline_scenario][model]['position_mean_error']
+                for scenario in scenarios:
+                    if model in full_results[scenario]:
+                        building_acc = full_results[scenario][model]['building_accuracy']
+                        floor_acc = full_results[scenario][model]['floor_accuracy']
+                        position_error = full_results[scenario][model]['position_mean_error']
+                        score = (
+                            0.4 * (building_acc / baseline_building_acc if baseline_building_acc > 0 else 0) +
+                            0.3 * (floor_acc / baseline_floor_acc if baseline_floor_acc > 0 else 0) +
+                            0.3 * (baseline_position_error / position_error if position_error > 0 else 0)
+                        )
+                        score = min(score, 1.0)
+                        scores.append(score)
+                    else:
+                        scores.append(0.0)
+            robustness_scores[model] = scores
+
+        return baseline_scenario, scenarios, all_models, robustness_scores
+
+    # 新增：輸出穩健性摘要 Markdown
+    def generate_robustness_summary(self, full_results, output_dir):
+        """
+        生成 robustness_summary.md，包含：
+        - 評分標準與測試方法
+        - 模型穩健性排名（平均分數）
+        - 精選情境分數表
+        - 關鍵發現與時間戳
+        """
+        baseline_scenario, scenarios, all_models, robustness_scores = self.compute_robustness_scores(full_results)
+        if not scenarios:
+            print("沒有情境可生成穩健性摘要。")
+            return
+
+        # 取得測試次數（從任一結果取出）
+        try:
+            any_result = next(iter(next(iter(full_results.values())).values()))
+            num_trials = any_result.get('num_trials', 1)
+        except Exception:
+            num_trials = 1
+
+        # 計算每個模型的平均分數（排除基準情境）
+        try:
+            baseline_idx = scenarios.index(baseline_scenario)
+        except ValueError:
+            baseline_idx = 0
+
+        model_avg = {}
+        for model in all_models:
+            scores = robustness_scores.get(model, [])
+            if not scores:
+                model_avg[model] = 0.0
+                continue
+            scores_ex_baseline = [s for i, s in enumerate(scores) if i != baseline_idx]
+            avg = float(np.mean(scores_ex_baseline)) if scores_ex_baseline else float(np.mean(scores))
+            model_avg[model] = avg
+
+        # 排名（由高到低）
+        ranking = sorted(model_avg.items(), key=lambda x: x[1], reverse=True)
+
+        # 精選情境（若不存在則忽略）
+        preferred = ['原始資料', '高斯雜訊 5dB', '設備故障 10%', '設備故障 35%', '雜訊 5dB + 故障 10%', '雜訊 10dB + 故障 20%']
+        selected_scenarios = [s for s in preferred if s in scenarios]
+        if not selected_scenarios:
+            selected_scenarios = scenarios[:min(6, len(scenarios))]
+
+        # 計算每個情境的平均分數（用於找出最具挑戰性情境，排除基準）
+        scenario_avg = {}
+        for i, sc in enumerate(scenarios):
+            vals = [robustness_scores[m][i] for m in all_models if len(robustness_scores[m]) > i]
+            scenario_avg[sc] = float(np.mean(vals)) if vals else 0.0
+        toughest_scenario = min(
+            ((sc, v) for sc, v in scenario_avg.items() if sc != baseline_scenario),
+            key=lambda x: x[1],
+            default=(scenarios[0], scenario_avg.get(scenarios[0], 0.0))
+        )
+
+        # 檔案輸出
+        out_path = os.path.join(output_dir, 'robustness_summary.md')
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        with open(out_path, 'w', encoding='utf-8') as f:
+            f.write("# 模型穩健性評分摘要\n\n")
+            f.write("本摘要基於不同資料損壞情境下的模型性能保持率計算穩健性評分。\n\n")
+            f.write("**評分標準**：\n")
+            f.write("- 1.0：完美保持基準性能\n")
+            f.write("- 0.8-1.0：優秀的穩健性\n")
+            f.write("- 0.6-0.8：良好的穩健性\n")
+            f.write("- 0.4-0.6：一般的穩健性\n")
+            f.write("- <0.4：較差的穩健性\n\n")
+            f.write("**測試方法**：\n")
+            f.write(f"- 每個情境進行 {num_trials} 次獨立測試取平均值\n")
+            f.write("- 原始資料的多次測試用於評估模型內部隨機性和數值穩定性\n")
+            f.write("- 損壞情境的多次測試用於獲得更可靠的穩健性評估\n\n")
+            f.write("- **測試方法說明**：所有情境都進行相同次數的測試，確保統計結果的可靠性\n")
+            f.write("  - 原始資料：評估模型預測的一致性和數值穩定性\n")
+            f.write("  - 損壞情境：評估在不同隨機損壞模式下的平均性能\n")
+
+            f.write("## 模型穩健性排名\n\n")
+            for i, (m, avg) in enumerate(ranking, start=1):
+                level = "需改進"
+                f.write(f"{i}. **{m}**：平均穩健性評分 {avg:.3f} ({level})\n")
+            f.write("\n")
+
+            f.write("## 各情境詳細評分\n\n")
+            # 表頭
+            f.write("|                | " + " | ".join([f"{sc}" for sc in selected_scenarios]) + " |\n")
+            f.write("|:---------------|" + "|".join([":" + "-"*(max(3, len(sc))) for sc in selected_scenarios]) + "|\n")
+            # 各模型列
+            for m in all_models:
+                f.write(f"| {m} ")
+                for sc in selected_scenarios:
+                    idx = scenarios.index(sc)
+                    val = robustness_scores[m][idx] if len(robustness_scores[m]) > idx else 0.0
+                    f.write(f"| {val:.3f} ")
+                f.write("|\n")
+
+            f.write("\n## 關鍵發現\n\n")
+            if ranking:
+                f.write(f"- 最穩健模型：{ranking[0][0]}（平均評分：{ranking[0][1]:.3f}）\n")
+            f.write(f"- 最具挑戰性情境：{toughest_scenario[0]}（平均評分：{toughest_scenario[1]:.3f}）\n")
+            f.write("- 統計可靠性：多次測試可降低單次隨機性的影響，提高結論可信度\n\n")
+            f.write("---\n")
+            f.write(f"*報告生成時間：{now_str}*\n")
+            f.write(f"*測試設定：每情境 {num_trials} 次獨立測試取平均*\n")
+
+        print(f"穩健性摘要已生成至: {out_path}")
+        
 def main():
     """主函數"""
     print("=== 開始模型比較和穩健性測試 ===")
