@@ -140,6 +140,11 @@ def advanced_data_preprocessing(rss_data):
 
 def train_enhanced_model(hadnn_data_dir, output_model_dir="./models"):
     """訓練增強型 HADNN 模型"""
+    # 確保輸出目錄存在（移到函數開頭）
+    if not os.path.exists(output_model_dir):
+        os.makedirs(output_model_dir, exist_ok=True)
+        print(f"創建輸出目錄：{output_model_dir}")
+        
     # 載入數據
     train_x = np.load(os.path.join(hadnn_data_dir, 'train_x.npy'))
     train_b = np.load(os.path.join(hadnn_data_dir, 'train_b.npy'))
@@ -267,8 +272,7 @@ def train_enhanced_model(hadnn_data_dir, output_model_dir="./models"):
     )
     
     # 儲存模型
-    if not os.path.exists(output_model_dir):
-        os.makedirs(output_model_dir, exist_ok=True)
+    # 移除此處的目錄檢查，因為已經在函數開頭檢查
     
     # 使用Python檔案名稱作為模型檔名
     model_name = os.path.splitext(os.path.basename(__file__))[0]

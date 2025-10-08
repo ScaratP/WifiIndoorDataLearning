@@ -1,0 +1,9 @@
+組別,哈希值,學號,姓名,課程代碼,課程名稱,檔案路徑,總參考點數量,符合WiFi要求的點數,SEA點數,SEB點數,SEC點數,加權總點數
+重複組 1,36456199b95d9e4a...,Unknown,Unknown,251008,Unknown,.\points\scan13\27_wifi_reference_points_20251002_142900.json,54,54,54,0,0,108
+重複組 1,36456199b95d9e4a...,11211227,鄭宇淮,42120,行動裝置,.\points\scan13\NTTUIndoorPositionPointsCollect\42120\11211227 (鄭宇淮)\27_wifi_reference_points_20251002_142900.json,54,54,54,0,0,108
+重複組 2,64035a13eeb72a48...,Unknown,Unknown,251008,Unknown,.\points\scan13\wifi_reference_points_20251001_170756.json,50,50,14,34,2,98
+重複組 2,64035a13eeb72a48...,11211136,蔡昌諭,42120,行動裝置,.\points\scan13\NTTUIndoorPositionPointsCollect\42120\11211136 (蔡昌諭)\wifi_reference_points_20251001_170756.json,50,50,14,34,2,98
+重複組 3,d38b9512f9f369e6...,Unknown,Unknown,251008,Unknown,.\points\scan13\wifi_reference_points_20251002_115359 (1).json,25,25,3,21,1,49
+重複組 3,d38b9512f9f369e6...,Unknown,Unknown,251008,Unknown,.\points\scan13\wifi_reference_points_20251002_115359.json,25,25,3,21,1,49
+重複組 4,44dc605e8d881fd6...,Unknown,Unknown,251008,Unknown,.\points\scan13\wifi_reference_points_20251002_120033 (1).json,56,56,34,21,1,111
+重複組 4,44dc605e8d881fd6...,Unknown,Unknown,251008,Unknown,.\points\scan13\wifi_reference_points_20251002_120033.json,56,56,34,21,1,111
