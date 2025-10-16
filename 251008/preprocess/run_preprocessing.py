@@ -9,10 +9,24 @@ from extract_and_filter import extract_wifi_data_with_filter
 from create_vector_format import create_vector_format, create_building_floor_point_labels, save_to_csv
 from hadnn_adapter import prepare_for_hadnn
 import json
+import datetime
 
 def main():
     """主要預處理流程"""
     print("=== NTTU WiFi 資料預處理 (支援點分類與位置回歸) ===")
+    
+    # 記錄開始時間
+    start_time = datetime.datetime.now()
+    
+    # 初始化收集預處理資訊的字典
+    preprocessing_info = {
+        "timestamp": start_time.strftime("%Y-%m-%d %H:%M:%S"),
+        "file_info": {},
+        "data_stats": {},
+        "building_floor_stats": {},
+        "point_stats": {},
+        "signal_stats": {}
+    }
     
     # 設定路徑
     scan13_folder = "../points/scan13"
@@ -21,11 +35,15 @@ def main():
     
     # 設定目標 SSID
     target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam', 'nttu'}
+    preprocessing_info["target_ssids"] = list(target_ssids)
     
     print(f"1. 從 {scan13_folder} 提取資料...")
     
     # 步驟 1: 提取並過濾資料
     extracted_data, file_info = extract_wifi_data_with_filter(scan13_folder, target_ssids)
+    
+    # 儲存檔案處理資訊
+    preprocessing_info["file_info"] = file_info
     
     # 印出檔案處理資訊
     print(f"   處理了 {file_info['total_files']} 個檔案")
@@ -38,12 +56,34 @@ def main():
     vector_data, bssid_info = create_vector_format(extracted_data, target_ssids)
     print(f"   建立了 {len(bssid_info)} 個 BSSID 的向量")
     
+    preprocessing_info["data_stats"]["num_reference_points"] = len(extracted_data)
+    preprocessing_info["data_stats"]["num_bssids"] = len(bssid_info)
+    preprocessing_info["data_stats"]["bssid_info"] = bssid_info[:5] + ["..."] if len(bssid_info) > 5 else bssid_info  # 僅保存部分BSSID資訊
+    
     # 步驟 3: 建立標籤
     print("3. 建立建築物、樓層和點位標籤...")
     vector_data, building_mapping, floor_mapping, point_mapping = create_building_floor_point_labels(vector_data)
     print(f"   建築物: {list(building_mapping.keys())}")
     print(f"   樓層: {list(floor_mapping.keys())}")
     print(f"   點位: {len(point_mapping)} 個")
+    
+    # 計算建築物和樓層分布比例
+    building_floor_stats = calculate_building_floor_distribution(vector_data)
+    preprocessing_info["building_floor_stats"] = building_floor_stats
+    
+    # 顯示建築物分布比例
+    print("\n   建築物分布比例:")
+    for building, stats in building_floor_stats["buildings"].items():
+        print(f"   - {building}: {stats['count']} 個點位 ({stats['percentage']:.2f}%)")
+    
+    # 顯示樓層分布比例
+    print("\n   樓層分布比例:")
+    for floor, stats in building_floor_stats["floors"].items():
+        print(f"   - {floor}樓: {stats['count']} 個點位 ({stats['percentage']:.2f}%)")
+    
+    preprocessing_info["building_mapping"] = building_mapping
+    preprocessing_info["floor_mapping"] = floor_mapping
+    preprocessing_info["point_mapping_count"] = len(point_mapping)
     
     # 顯示點位類型分佈
     room_points = [p for p in point_mapping.keys() if 'CORRIDOR' not in p]
@@ -52,6 +92,10 @@ def main():
     print(f"   - 走廊點位: {len(corridor_points)} 個")
     if corridor_points:
         print(f"   - 走廊點位範例: {corridor_points[:5]}")
+    
+    preprocessing_info["point_stats"]["room_points_count"] = len(room_points)
+    preprocessing_info["point_stats"]["corridor_points_count"] = len(corridor_points)
+    preprocessing_info["point_stats"]["corridor_examples"] = corridor_points[:5] if corridor_points else []
     
     # 步驟 4: 儲存為 CSV
     print("4. 儲存為 CSV 格式...")
@@ -72,9 +116,19 @@ def main():
     
     # 步驟 6: 執行高級資料品質分析
     print("6. 執行高級資料品質分析...")
-    analyze_data_quality(dataset, hadnn_dir)
+    analysis_results = analyze_data_quality(dataset, hadnn_dir)
+    preprocessing_info["data_quality_analysis"] = analysis_results
+    
+    # 記錄結束時間和處理耗時
+    end_time = datetime.datetime.now()
+    processing_time = (end_time - start_time).total_seconds()
+    preprocessing_info["processing_time"] = {
+        "seconds": processing_time,
+        "formatted": str(datetime.timedelta(seconds=processing_time))
+    }
     
     print("\n=== 預處理完成 ===")
+    print(f"總處理時間: {preprocessing_info['processing_time']['formatted']}")
     print(f"處理後資料位置:")
     print(f"  CSV 格式: {processed_dir}")
     print(f"  HADNN 格式: {hadnn_dir}")
@@ -91,8 +145,18 @@ def main():
     print(f"  標準化後座標範圍: x=[{dataset.train_c[:, 0].min():.2f}, {dataset.train_c[:, 0].max():.2f}], "f"y=[{dataset.train_c[:, 1].min():.2f}, {dataset.train_c[:, 1].max():.2f}]")
     
     # 添加數據品質檢查信息
-    print(f"\n資料品質檢查:")
     missing_percentage = (dataset.rss_data == -100).mean() * 100
+    preprocessing_info["signal_stats"]["missing_percentage"] = float(missing_percentage)
+    preprocessing_info["signal_stats"]["rss_range"] = {
+        "min": float(dataset.rss_data.min()),
+        "max": float(dataset.rss_data.max())
+    }
+    preprocessing_info["signal_stats"]["normalized_range"] = {
+        "min": float(dataset.train_x.min()),
+        "max": float(dataset.train_x.max())
+    }
+    
+    print(f"\n資料品質檢查:")
     print(f"  訊號缺失比例: {missing_percentage:.2f}%")
     print(f"  RSS 值範圍: {dataset.rss_data.min()} 到 {dataset.rss_data.max()}")
     print(f"  標準化後訓練資料範圍: {dataset.train_x.min():.2f} 到 {dataset.train_x.max():.2f}")
@@ -103,6 +167,111 @@ def main():
     print("  2. 位置回歸模型: 使用 RSS 特徵預測 (x, y) 座標")
     print("  3. 階層模型: 先預測建築物，再預測樓層，最後預測精確位置")
     print("  4. 考慮房間/走廊分類: 走廊通常有更複雜的信號傳播特性")
+    
+    # 保存完整的預處理資訊
+    preprocessing_info_path = os.path.join(processed_dir, 'preprocessing_info.json')
+    with open(preprocessing_info_path, 'w', encoding='utf-8') as f:
+        json.dump(preprocessing_info, f, ensure_ascii=False, indent=2)
+    
+    print(f"\n預處理資訊已保存至: {preprocessing_info_path}")
+    
+    # 生成簡易報告文本
+    generate_preprocessing_report(preprocessing_info, processed_dir)
+
+def calculate_building_floor_distribution(vector_data):
+    """計算建築物和樓層分布比例"""
+    total_points = len(vector_data)
+    if total_points == 0:
+        return {"buildings": {}, "floors": {}}
+    
+    # 計算建築物分布
+    building_counts = {}
+    for record in vector_data:
+        building = record.get('building', 'unknown')
+        if building not in building_counts:
+            building_counts[building] = 0
+        building_counts[building] += 1
+    
+    building_stats = {}
+    for building, count in building_counts.items():
+        building_stats[building] = {
+            "count": count,
+            "percentage": (count / total_points) * 100
+        }
+    
+    # 計算樓層分布
+    floor_counts = {}
+    for record in vector_data:
+        floor = record.get('floor', 'unknown')
+        if floor not in floor_counts:
+            floor_counts[floor] = 0
+        floor_counts[floor] += 1
+    
+    floor_stats = {}
+    for floor, count in floor_counts.items():
+        floor_stats[str(floor)] = {
+            "count": count,
+            "percentage": (count / total_points) * 100
+        }
+    
+    # 計算建築物-樓層組合分布
+    building_floor_counts = {}
+    for record in vector_data:
+        building = record.get('building', 'unknown')
+        floor = record.get('floor', 'unknown')
+        key = f"{building}-{floor}"
+        if key not in building_floor_counts:
+            building_floor_counts[key] = 0
+        building_floor_counts[key] += 1
+    
+    building_floor_combo_stats = {}
+    for combo, count in building_floor_counts.items():
+        building_floor_combo_stats[combo] = {
+            "count": count,
+            "percentage": (count / total_points) * 100
+        }
+    
+    return {
+        "total_points": total_points,
+        "buildings": building_stats,
+        "floors": floor_stats,
+        "building_floor_combinations": building_floor_combo_stats
+    }
+
+def generate_preprocessing_report(info, output_dir):
+    """生成簡易的預處理報告文本"""
+    report_path = os.path.join(output_dir, 'preprocessing_report.txt')
+    
+    with open(report_path, 'w', encoding='utf-8') as f:
+        f.write("===== NTTU WiFi 資料預處理報告 =====\n\n")
+        f.write(f"預處理時間: {info['timestamp']}\n")
+        f.write(f"處理耗時: {info['processing_time']['formatted']}\n\n")
+        
+        f.write("=== 檔案處理資訊 ===\n")
+        f.write(f"處理檔案總數: {info['file_info']['total_files']}\n")
+        f.write(f"總記錄數: {info['file_info']['total_records']}\n")
+        f.write(f"有效記錄數: {info['file_info']['valid_records']}\n")
+        f.write(f"提取參考點數: {info['data_stats']['num_reference_points']}\n")
+        f.write(f"BSSID 數量: {info['data_stats']['num_bssids']}\n\n")
+        
+        f.write("=== 建築物和樓層分布 ===\n")
+        for building, stats in info['building_floor_stats']['buildings'].items():
+            f.write(f"建築物 {building}: {stats['count']} 個點位 ({stats['percentage']:.2f}%)\n")
+        
+        f.write("\n")
+        for floor, stats in info['building_floor_stats']['floors'].items():
+            f.write(f"{floor}樓: {stats['count']} 個點位 ({stats['percentage']:.2f}%)\n")
+        
+        f.write("\n=== 點位統計 ===\n")
+        f.write(f"點位總數: {info['point_mapping_count']}\n")
+        f.write(f"房間點位: {info['point_stats']['room_points_count']}\n")
+        f.write(f"走廊點位: {info['point_stats']['corridor_points_count']}\n\n")
+        
+        f.write("=== 信號統計 ===\n")
+        f.write(f"訊號缺失比例: {info['signal_stats']['missing_percentage']:.2f}%\n")
+        f.write(f"RSS 值範圍: {info['signal_stats']['rss_range']['min']} 到 {info['signal_stats']['rss_range']['max']}\n")
+        
+    print(f"預處理簡易報告已保存至: {report_path}")
 
 def analyze_data_quality(dataset, output_dir):
     """執行更深入的資料品質分析，識別可能的問題"""

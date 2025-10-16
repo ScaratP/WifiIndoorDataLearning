@@ -89,21 +89,21 @@ class ModelComparison:
                     'path': './models/hadnn_n_random_forest.h5',
                     'type': 'keras'
                 },
-                {
-                    'name': 'original hadnn tflite',
-                    'path': './models/original_hadnn.tflite',
-                    'type': 'tflite'
-                },
-                {
-                    'name': 'mlp tflite',
-                    'path': './models/mlp.tflite',
-                    'type': 'tflite'
-                },
-                {
-                    'name': 'hadnn+rf tflite',
-                    'path': './models/hadnn_n_random_forest.tflite',
-                    'type': 'tflite'
-                },
+                # {
+                #     'name': 'original hadnn tflite',
+                #     'path': './models/original_hadnn.tflite',
+                #     'type': 'tflite'
+                # },
+                # {
+                #     'name': 'mlp tflite',
+                #     'path': './models/mlp.tflite',
+                #     'type': 'tflite'
+                # },
+                # {
+                #     'name': 'hadnn+rf tflite',
+                #     'path': './models/hadnn_n_random_forest.tflite',
+                #     'type': 'tflite'
+                # },
             ]
         
         self.models_to_compare = models_to_compare
@@ -495,29 +495,29 @@ class ModelComparison:
         # 定義穩健性測試情境
         robustness_scenarios = {
             '原始資料': {'noise': 0, 'missing_rate': 0},
-            # '高斯雜訊 1dB': {'noise': 1, 'missing_rate': 0},
-            # '高斯雜訊 2dB': {'noise': 2, 'missing_rate': 0},
-            # '高斯雜訊 3dB': {'noise': 3, 'missing_rate': 0},
-            # '高斯雜訊 4dB': {'noise': 4, 'missing_rate': 0},
-            # '高斯雜訊 5dB': {'noise': 5, 'missing_rate': 0},
-            # '高斯雜訊 6dB': {'noise': 6, 'missing_rate': 0},
-            # '高斯雜訊 7dB': {'noise': 7, 'missing_rate': 0},
-            # '高斯雜訊 8dB': {'noise': 8, 'missing_rate': 0},
-            # '高斯雜訊 9dB': {'noise': 9, 'missing_rate': 0},
-            # '高斯雜訊 10dB': {'noise': 10, 'missing_rate': 0},
+            '高斯雜訊 1dB': {'noise': 1, 'missing_rate': 0},
+            '高斯雜訊 2dB': {'noise': 2, 'missing_rate': 0},
+            '高斯雜訊 3dB': {'noise': 3, 'missing_rate': 0},
+            '高斯雜訊 4dB': {'noise': 4, 'missing_rate': 0},
+            '高斯雜訊 5dB': {'noise': 5, 'missing_rate': 0},
+            '高斯雜訊 6dB': {'noise': 6, 'missing_rate': 0},
+            '高斯雜訊 7dB': {'noise': 7, 'missing_rate': 0},
+            '高斯雜訊 8dB': {'noise': 8, 'missing_rate': 0},
+            '高斯雜訊 9dB': {'noise': 9, 'missing_rate': 0},
+            '高斯雜訊 10dB': {'noise': 10, 'missing_rate': 0},
             '設備故障 5%': {'noise': 0, 'missing_rate': 0.05},
-            # '設備故障 10%': {'noise': 0, 'missing_rate': 0.1},
-            # '設備故障 15%': {'noise': 0, 'missing_rate': 0.15},
-            # '設備故障 20%': {'noise': 0, 'missing_rate': 0.2},
-            # '設備故障 25%': {'noise': 0, 'missing_rate': 0.25},
-            # '設備故障 30%': {'noise': 0, 'missing_rate': 0.3},
-            # '設備故障 35%': {'noise': 0, 'missing_rate': 0.35},
-            # '雜訊 1db + 故障 10%': {'noise': 1, 'missing_rate': 0.1},
-            # '雜訊 2db + 故障 10%': {'noise': 2, 'missing_rate': 0.1},
-            # '雜訊 3db + 故障 10%': {'noise': 3, 'missing_rate': 0.1},
-            # '雜訊 4db + 故障 10%': {'noise': 4, 'missing_rate': 0.1},
-            # '雜訊 5dB + 故障 10%': {'noise': 5, 'missing_rate': 0.1},
-            # '雜訊 10dB + 故障 20%': {'noise': 10, 'missing_rate': 0.2}
+            '設備故障 10%': {'noise': 0, 'missing_rate': 0.1},
+            '設備故障 15%': {'noise': 0, 'missing_rate': 0.15},
+            '設備故障 20%': {'noise': 0, 'missing_rate': 0.2},
+            '設備故障 25%': {'noise': 0, 'missing_rate': 0.25},
+            '設備故障 30%': {'noise': 0, 'missing_rate': 0.3},
+            '設備故障 35%': {'noise': 0, 'missing_rate': 0.35},
+            '雜訊 1db + 故障 10%': {'noise': 1, 'missing_rate': 0.1},
+            '雜訊 2db + 故障 10%': {'noise': 2, 'missing_rate': 0.1},
+            '雜訊 3db + 故障 10%': {'noise': 3, 'missing_rate': 0.1},
+            '雜訊 4db + 故障 10%': {'noise': 4, 'missing_rate': 0.1},
+            '雜訊 5dB + 故障 10%': {'noise': 5, 'missing_rate': 0.1},
+            '雜訊 10dB + 故障 20%': {'noise': 10, 'missing_rate': 0.2},
             '雜訊 4db + 故障 10%': {'noise': 4, 'missing_rate': 0.1},
             '雜訊 7db + 故障 10%': {'noise': 7, 'missing_rate': 0.1},
             '雜訊 10db + 故障 10%': {'noise': 10, 'missing_rate': 0.1},
@@ -578,12 +578,6 @@ class ModelComparison:
                         if model_info['name'] not in scenario_results:
                             scenario_results[model_info['name']] = []
                         scenario_results[model_info['name']].append(result)
-
-            # 移除：原本在這裡才「合併結果」會只留下最後一次 trial
-            # for model_name, result in trial_results.items():
-            #     if model_name not in scenario_results:
-            #         scenario_results[model_name] = []
-            #     scenario_results[model_name].append(result)
 
             # 計算每個模型的平均結果和標準差
             averaged_results = {}
@@ -891,34 +885,34 @@ class ModelComparison:
                 
                 f.write("\n")
                 
-            # 在報告末尾添加圖表文件清單
-            f.write("## 📂 附錄：完整圖表清單\n\n")
-            f.write("### 各情境專用圖表\n\n")
+            # # 在報告末尾添加圖表文件清單
+            # f.write("## 📂 附錄：完整圖表清單\n\n")
+            # f.write("### 各情境專用圖表\n\n")
             
-            scenario_names = list(full_results.keys())
-            for scenario_name in scenario_names:
-                scenario_clean = scenario_name.replace(" ", "_")
-                f.write(f"**{scenario_name}：**\n")
-                f.write(f"- `classification_accuracy_{scenario_clean}.svg` - 分類準確度對比\n")
-                f.write(f"- `position_errors_{scenario_clean}.svg` - 位置誤差對比\n")
-                f.write(f"- `error_boxplot_{scenario_clean}.svg` - 誤差箱型圖\n")
-                f.write(f"- `error_violin_{scenario_clean}.svg` - 誤差小提琴圖\n")
-                f.write(f"- `error_cdf_{scenario_clean}.svg` - 誤差累積分布函數\n")
-                f.write(f"- `error_detailed_distribution_{scenario_clean}.svg` - 詳細誤差分布\n")
-                f.write(f"- `error_statistics_table_{scenario_clean}.svg` - 統計摘要表格\n\n")
+            # scenario_names = list(full_results.keys())
+            # for scenario_name in scenario_names:
+            #     scenario_clean = scenario_name.replace(" ", "_")
+            #     f.write(f"**{scenario_name}：**\n")
+            #     f.write(f"- `classification_accuracy_{scenario_clean}.svg` - 分類準確度對比\n")
+            #     f.write(f"- `position_errors_{scenario_clean}.svg` - 位置誤差對比\n")
+            #     f.write(f"- `error_boxplot_{scenario_clean}.svg` - 誤差箱型圖\n")
+            #     f.write(f"- `error_violin_{scenario_clean}.svg` - 誤差小提琴圖\n")
+            #     f.write(f"- `error_cdf_{scenario_clean}.svg` - 誤差累積分布函數\n")
+            #     f.write(f"- `error_detailed_distribution_{scenario_clean}.svg` - 詳細誤差分布\n")
+            #     f.write(f"- `error_statistics_table_{scenario_clean}.svg` - 統計摘要表格\n\n")
             
-            f.write("### 跨情境分析圖表\n\n")
-            f.write("- `robustness_building_accuracy.svg` - 建築物分類穩健性測試\n")
-            f.write("- `robustness_floor_accuracy.svg` - 樓層分類穩健性測試\n")
-            f.write("- `robustness_position_error.svg` - 位置預測穩健性測試\n")
-            f.write("- `robustness_scores.svg` - 綜合穩健性評分\n\n")
+            # f.write("### 跨情境分析圖表\n\n")
+            # f.write("- `robustness_building_accuracy.svg` - 建築物分類穩健性測試\n")
+            # f.write("- `robustness_floor_accuracy.svg` - 樓層分類穩健性測試\n")
+            # f.write("- `robustness_position_error.svg` - 位置預測穩健性測試\n")
+            # f.write("- `robustness_scores.svg` - 綜合穩健性評分\n\n")
             
-            f.write("### 📊 建議的圖表查看順序\n\n")
-            f.write("1. **快速概覽**：先查看各情境的分類準確度和位置誤差對比圖\n")
-            f.write("2. **深入分析**：查看箱型圖和 CDF 圖了解誤差分布特性\n")
-            f.write("3. **詳細檢視**：查看詳細分布圖和統計表格獲取具體數值\n")
-            f.write("4. **穩健性評估**：查看跨情境圖表了解模型在不同條件下的表現\n")
-            f.write("5. **綜合評分**：參考穩健性評分圖做出最終決策\n\n")
+            # f.write("### 📊 建議的圖表查看順序\n\n")
+            # f.write("1. **快速概覽**：先查看各情境的分類準確度和位置誤差對比圖\n")
+            # f.write("2. **深入分析**：查看箱型圖和 CDF 圖了解誤差分布特性\n")
+            # f.write("3. **詳細檢視**：查看詳細分布圖和統計表格獲取具體數值\n")
+            # f.write("4. **穩健性評估**：查看跨情境圖表了解模型在不同條件下的表現\n")
+            # f.write("5. **綜合評分**：參考穩健性評分圖做出最終決策\n\n")
             
             f.write("---")
             
@@ -944,39 +938,39 @@ class ModelComparison:
                 '樓層準確率': floor_accuracies
             }, index=names)
 
-            try:
-                fig = plt.figure(figsize=(12, 8))
-                df_acc.plot(kind='bar', width=0.4, align='center')
-                plt.xlabel('模型')
-                plt.ylabel('準確率 (%)')
-                plt.title(f'不同模型的分類準確度對比 - {scenario_name}')
-                plt.xticks(rotation=15)
-                plt.grid(axis='y', linestyle='--', alpha=0.7)
-                plt.legend()
-                plt.tight_layout()
-                plt.savefig(os.path.join(output_dir, f'classification_accuracy_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
-            finally:
-                plt.close(fig)  # 明確關閉特定圖表
+            # try:
+            #     fig = plt.figure(figsize=(12, 8))
+            #     df_acc.plot(kind='bar', width=0.4, align='center')
+            #     plt.xlabel('模型')
+            #     plt.ylabel('準確率 (%)')
+            #     plt.title(f'不同模型的分類準確度對比 - {scenario_name}')
+            #     plt.xticks(rotation=15)
+            #     plt.grid(axis='y', linestyle='--', alpha=0.7)
+            #     plt.legend()
+            #     plt.tight_layout()
+            #     plt.savefig(os.path.join(output_dir, f'classification_accuracy_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
+            # finally:
+            #     plt.close(fig)  # 明確關閉特定圖表
 
-            # 位置誤差圖表
-            try:
-                fig = plt.figure(figsize=(12, 8))
-                plt.bar(names, mean_errors, color='skyblue')
-                plt.xlabel('模型')
-                plt.ylabel('平均誤差 (公尺)')
-                plt.title(f'不同模型的位置預測平均誤差對比 - {scenario_name}')
-                plt.xticks(rotation=15)
-                plt.grid(axis='y', linestyle='--', alpha=0.7)
-                plt.tight_layout()
-                plt.savefig(os.path.join(output_dir, f'position_errors_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
-            finally:
-                plt.close(fig)  # 明確關閉特定圖表
+            # # 位置誤差圖表
+            # try:
+            #     fig = plt.figure(figsize=(12, 8))
+            #     plt.bar(names, mean_errors, color='skyblue')
+            #     plt.xlabel('模型')
+            #     plt.ylabel('平均誤差 (公尺)')
+            #     plt.title(f'不同模型的位置預測平均誤差對比 - {scenario_name}')
+            #     plt.xticks(rotation=15)
+            #     plt.grid(axis='y', linestyle='--', alpha=0.7)
+            #     plt.tight_layout()
+            #     plt.savefig(os.path.join(output_dir, f'position_errors_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
+            # finally:
+            #     plt.close(fig)  # 明確關閉特定圖表
 
-            # 改進的位置誤差分布圖表
-            self.generate_enhanced_error_distribution_charts(scenario_name, names, results, output_dir)
+            # # 改進的位置誤差分布圖表
+            # self.generate_enhanced_error_distribution_charts(scenario_name, names, results, output_dir)
 
         # 生成跨情境比較圖表
-        self.generate_cross_scenario_charts(full_results, output_dir)
+        # self.generate_cross_scenario_charts(full_results, output_dir)
 
     def generate_enhanced_error_distribution_charts(self, scenario_name, names, results, output_dir):
         """生成增強版的位置誤差分布圖表"""
@@ -1056,154 +1050,153 @@ class ModelComparison:
         #     plt.close(fig)  # 明確關閉特定圖表
 
         # 3. 累積分布函數 (CDF) - 顯示誤差達到某閾值的百分比
-        try:
-            fig = plt.figure(figsize=(14, 8))
+        # try:
+        #     fig = plt.figure(figsize=(14, 8))
             
-            for i, name in enumerate(names):
-                errors = all_errors[name]
-                sorted_errors = np.sort(errors)
-                cumulative_prob = np.arange(1, len(sorted_errors) + 1) / len(sorted_errors)
+        #     for i, name in enumerate(names):
+        #         errors = all_errors[name]
+        #         sorted_errors = np.sort(errors)
+        #         cumulative_prob = np.arange(1, len(sorted_errors) + 1) / len(sorted_errors)
                 
-                plt.plot(sorted_errors, cumulative_prob * 100, 
-                        label=name, color=colors[i % len(colors)], linewidth=2)
+        #         plt.plot(sorted_errors, cumulative_prob * 100, 
+        #                 label=name, color=colors[i % len(colors)], linewidth=2)
                 
-                # 添加關鍵點標記
-                for threshold in [1.0, 2.0, 3.0]:
-                    if threshold <= np.max(sorted_errors):
-                        percentage = np.sum(errors <= threshold) / len(errors) * 100
-                        idx = np.where(sorted_errors <= threshold)[0]
-                        if len(idx) > 0:
-                            plt.scatter(threshold, percentage, color=colors[i % len(colors)], 
-                                      s=50, zorder=5, alpha=0.8)
+        #         # 添加關鍵點標記
+        #         for threshold in [1.0, 2.0, 3.0]:
+        #             if threshold <= np.max(sorted_errors):
+        #                 percentage = np.sum(errors <= threshold) / len(errors) * 100
+        #                 idx = np.where(sorted_errors <= threshold)[0]
+        #                 if len(idx) > 0:
+        #                     plt.scatter(threshold, percentage, color=colors[i % len(colors)], s=50, zorder=5, alpha=0.8)
         
-            # 添加參考線
-            for threshold in [1.0, 2.0, 3.0]:
-                plt.axvline(x=threshold, color='gray', linestyle='--', alpha=0.5)
-                plt.text(threshold, 5, f'{threshold}m', rotation=90, va='bottom', ha='right', fontsize=9)
+        #     # 添加參考線
+        #     for threshold in [1.0, 2.0, 3.0]:
+        #         plt.axvline(x=threshold, color='gray', linestyle='--', alpha=0.5)
+        #         plt.text(threshold, 5, f'{threshold}m', rotation=90, va='bottom', ha='right', fontsize=9)
             
-            plt.xlabel('位置預測誤差 (公尺)')
-            plt.ylabel('累積百分比 (%)')
-            plt.title(f'位置預測誤差累積分布函數 - {scenario_name}')
-            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.grid(True, alpha=0.3)
-            plt.xlim(left=0)
-            plt.ylim(0, 100)
-            plt.tight_layout()
-            plt.savefig(os.path.join(output_dir, f'error_cdf_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
-        except Exception as e:
-            print(f"CDF圖生成失敗: {e}")
-        finally:
-            plt.close(fig)  # 明確關閉特定圖表
+        #     plt.xlabel('位置預測誤差 (公尺)')
+        #     plt.ylabel('累積百分比 (%)')
+        #     plt.title(f'位置預測誤差累積分布函數 - {scenario_name}')
+        #     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        #     plt.grid(True, alpha=0.3)
+        #     plt.xlim(left=0)
+        #     plt.ylim(0, 100)
+        #     plt.tight_layout()
+        #     plt.savefig(os.path.join(output_dir, f'error_cdf_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
+        # except Exception as e:
+        #     print(f"CDF圖生成失敗: {e}")
+        # finally:
+        #     plt.close(fig)  # 明確關閉特定圖表
 
-        # 4. 改進的直方圖 - 更清晰的分布顯示
-        try:
-            fig = plt.figure(figsize=(14, 10))
+        # # 4. 改進的直方圖 - 更清晰的分布顯示
+        # try:
+        #     fig = plt.figure(figsize=(14, 10))
             
-            # 使用子圖分別顯示每個模型
-            n_models = len(names)
-            rows = (n_models + 1) // 2  # 每行最多2個
-            cols = min(n_models, 2)
+        #     # 使用子圖分別顯示每個模型
+        #     n_models = len(names)
+        #     rows = (n_models + 1) // 2  # 每行最多2個
+        #     cols = min(n_models, 2)
             
-            for i, name in enumerate(names):
-                plt.subplot(rows, cols, i + 1)
-                errors = all_errors[name]
+        #     for i, name in enumerate(names):
+        #         plt.subplot(rows, cols, i + 1)
+        #         errors = all_errors[name]
                 
-                # 計算最佳bin數量
-                n_bins = min(30, max(10, int(np.sqrt(len(errors)))))
+        #         # 計算最佳bin數量
+        #         n_bins = min(30, max(10, int(np.sqrt(len(errors)))))
 
 
-                # 使用統計量計算 bin 邊界
-                bin_width = 2 * (np.percentile(errors, 75) - np.percentile(errors, 25)) / (len(errors) ** (1/3))  # Freedman-Diaconis rule
-                bins = np.arange(0, np.max(errors) + bin_width, bin_width)
+        #         # 使用統計量計算 bin 邊界
+        #         bin_width = 2 * (np.percentile(errors, 75) - np.percentile(errors, 25)) / (len(errors) ** (1/3))  # Freedman-Diaconis rule
+        #         bins = np.arange(0, np.max(errors) + bin_width, bin_width)
                 
-                n, bins, patches = plt.hist(errors, bins=bins, alpha=0.7, 
-                                       color=colors[i % len(colors)], edgecolor='black', linewidth=0.5)
+        #         n, bins, patches = plt.hist(errors, bins=bins, alpha=0.7, 
+        #                                color=colors[i % len(colors)], edgecolor='black', linewidth=0.5)
                 
-                # 添加統計線
-                mean_err = np.mean(errors)
-                median_err = np.median(errors)
+        #         # 添加統計線
+        #         mean_err = np.mean(errors)
+        #         median_err = np.median(errors)
                 
-                plt.axvline(mean_err, color='red', linestyle='--', linewidth=2, label=f'平均: {mean_err:.3f}m')
-                plt.axvline(median_err, color='orange', linestyle='--', linewidth=2, label=f'中位數: {median_err:.3f}m')
+        #         plt.axvline(mean_err, color='red', linestyle='--', linewidth=2, label=f'平均: {mean_err:.3f}m')
+        #         plt.axvline(median_err, color='orange', linestyle='--', linewidth=2, label=f'中位數: {median_err:.3f}m')
                 
-                plt.xlabel('誤差 (公尺)')
-                plt.ylabel('樣本數')
-                plt.title(f'{name}')
-                plt.legend(fontsize=8)
-                plt.grid(axis='y', linestyle='--', alpha=0.3)
+        #         plt.xlabel('誤差 (公尺)')
+        #         plt.ylabel('樣本數')
+        #         plt.title(f'{name}')
+        #         plt.legend(fontsize=8)
+        #         plt.grid(axis='y', linestyle='--', alpha=0.3)
                 
-                # 添加統計信息文字
-                stats_text = f'樣本數: {len(errors)}\n標準差: {np.std(errors):.3f}m\n90%分位數: {np.percentile(errors, 90):.3f}m'
-                plt.text(0.98, 0.98, stats_text, transform=plt.gca().transAxes, 
-                        verticalalignment='top', horizontalalignment='right',
-                        bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.8),
-                        fontsize=8)
+        #         # 添加統計信息文字
+        #         stats_text = f'樣本數: {len(errors)}\n標準差: {np.std(errors):.3f}m\n90%分位數: {np.percentile(errors, 90):.3f}m'
+        #         plt.text(0.98, 0.98, stats_text, transform=plt.gca().transAxes, 
+        #                 verticalalignment='top', horizontalalignment='right',
+        #                 bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.8),
+        #                 fontsize=8)
             
-            plt.suptitle(f'各模型位置預測誤差詳細分布 - {scenario_name}', fontsize=14)
-            plt.tight_layout()
-            plt.savefig(os.path.join(output_dir, f'error_detailed_distribution_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
-        except Exception as e:
-            print(f"詳細分布圖生成失敗: {e}")
-        finally:
-            plt.close(fig)  # 明確關閉特定圖表
+        #     plt.suptitle(f'各模型位置預測誤差詳細分布 - {scenario_name}', fontsize=14)
+        #     plt.tight_layout()
+        #     plt.savefig(os.path.join(output_dir, f'error_detailed_distribution_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
+        # except Exception as e:
+        #     print(f"詳細分布圖生成失敗: {e}")
+        # finally:
+        #     plt.close(fig)  # 明確關閉特定圖表
 
-        # 5. 誤差統計總結表格圖（修正字體問題）
-        try:
-            fig = plt.figure(figsize=(12, 6))
-            plt.axis('off')  # 隱藏軸
+        # # 5. 誤差統計總結表格圖（修正字體問題）
+        # try:
+        #     fig = plt.figure(figsize=(12, 6))
+        #     plt.axis('off')  # 隱藏軸
             
-            # 準備統計數據，避免使用特殊符號
-            stats_data = []
-            for name in names:
-                errors = all_errors[name]
-                stats_row = [
-                    name,
-                    f"{np.mean(errors):.3f}",
-                    f"{np.median(errors):.3f}",
-                    f"{np.std(errors):.3f}",
-                    f"{np.percentile(errors, 25):.3f}",
-                    f"{np.percentile(errors, 75):.3f}",
-                    f"{np.percentile(errors, 90):.3f}",
-                    f"{np.sum(errors <= 1.0)/len(errors)*100:.1f}",
-                    f"{np.sum(errors <= 2.0)/len(errors)*100:.1f}",
-                    f"{np.sum(errors <= 3.0)/len(errors)*100:.1f}"
-                ]
-                stats_data.append(stats_row)
+        #     # 準備統計數據，避免使用特殊符號
+        #     stats_data = []
+        #     for name in names:
+        #         errors = all_errors[name]
+        #         stats_row = [
+        #             name,
+        #             f"{np.mean(errors):.3f}",
+        #             f"{np.median(errors):.3f}",
+        #             f"{np.std(errors):.3f}",
+        #             f"{np.percentile(errors, 25):.3f}",
+        #             f"{np.percentile(errors, 75):.3f}",
+        #             f"{np.percentile(errors, 90):.3f}",
+        #             f"{np.sum(errors <= 1.0)/len(errors)*100:.1f}",
+        #             f"{np.sum(errors <= 2.0)/len(errors)*100:.1f}",
+        #             f"{np.sum(errors <= 3.0)/len(errors)*100:.1f}"
+        #         ]
+        #         stats_data.append(stats_row)
             
-            # 修改表格標題，避免使用 ≤ 符號
-            headers = ['模型', '平均值', '中位數', '標準差', 'Q25', 'Q75', 'P90', '<1m', '<2m', '<3m']
+        #     # 修改表格標題，避免使用 ≤ 符號
+        #     headers = ['模型', '平均值', '中位數', '標準差', 'Q25', 'Q75', 'P90', '<1m', '<2m', '<3m']
             
-            # 創建表格
-            table = plt.table(cellText=stats_data, colLabels=headers, 
-                             cellLoc='center', loc='center',
-                             colColours=['lightgray']*len(headers))
+        #     # 創建表格
+        #     table = plt.table(cellText=stats_data, colLabels=headers, 
+        #                      cellLoc='center', loc='center',
+        #                      colColours=['lightgray']*len(headers))
             
-            table.auto_set_font_size(False)
-            table.set_fontsize(10)
-            table.scale(1, 2)  # 調整表格大小
+        #     table.auto_set_font_size(False)
+        #     table.set_fontsize(10)
+        #     table.scale(1, 2)  # 調整表格大小
             
-            # 為不同模型行著色
-            for i in range(len(stats_data)):
-                for j in range(len(headers)):
-                    if j == 0:  # 模型名稱列
-                        table[(i+1, j)].set_facecolor(colors[i % len(colors)])
-                        table[(i+1, j)].set_alpha(0.3)
+        #     # 為不同模型行著色
+        #     for i in range(len(stats_data)):
+        #         for j in range(len(headers)):
+        #             if j == 0:  # 模型名稱列
+        #                 table[(i+1, j)].set_facecolor(colors[i % len(colors)])
+        #                 table[(i+1, j)].set_alpha(0.3)
             
-            plt.title(f'位置預測誤差統計總結 - {scenario_name}', fontsize=14, pad=20)
-            plt.tight_layout()
+        #     plt.title(f'位置預測誤差統計總結 - {scenario_name}', fontsize=14, pad=20)
+        #     plt.tight_layout()
             
-            # 使用 try-except 處理保存過程中的字體問題
-            try:
-                plt.savefig(os.path.join(output_dir, f'error_statistics_table_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
-            except Exception as font_error:
-                print(f"表格保存時字體問題: {font_error}，嘗試使用基本字體")
-                # 重設字體為更基本的選項
-                plt.rcParams['font.family'] = ['Arial', 'sans-serif']
-                plt.savefig(os.path.join(output_dir, f'error_statistics_table_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
-        except Exception as e:
-            print(f"統計表格圖生成失敗: {e}")
-        finally:
-            plt.close(fig)  # 明確關閉特定圖表
+        #     # 使用 try-except 處理保存過程中的字體問題
+        #     try:
+        #         plt.savefig(os.path.join(output_dir, f'error_statistics_table_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
+        #     except Exception as font_error:
+        #         print(f"表格保存時字體問題: {font_error}，嘗試使用基本字體")
+        #         # 重設字體為更基本的選項
+        #         plt.rcParams['font.family'] = ['Arial', 'sans-serif']
+        #         plt.savefig(os.path.join(output_dir, f'error_statistics_table_{scenario_name.replace(" ", "_")}.svg'), format='svg', bbox_inches='tight')
+        # except Exception as e:
+        #     print(f"統計表格圖生成失敗: {e}")
+        # finally:
+        #     plt.close(fig)  # 明確關閉特定圖表
 
     def generate_cross_scenario_charts(self, full_results, output_dir):
         """生成跨情境的比較圖表"""

@@ -1,0 +1,40 @@
+{
+  "n_rss": 545,
+  "n_buildings": 3,
+  "n_floors": 5,
+  "n_points": 14,
+  "num_examples": 2020,
+  "num_test_examples": 505,
+  "lo_mean": 50.094268798828125,
+  "lo_std": 21.42829704284668,
+  "la_mean": 55.84811782836914,
+  "la_std": 21.39611053466797,
+  "building_mapping": {
+    "sea": 0,
+    "seb": 1,
+    "sec": 2
+  },
+  "floor_mapping": {
+    "1": 0,
+    "2": 1,
+    "3": 2,
+    "4": 3,
+    "5": 4
+  },
+  "point_mapping": {
+    "SEA1F_CORRIDOR": 0,
+    "SEA2F_CORRIDOR": 1,
+    "SEA3F_CORRIDOR": 2,
+    "SEA4F_CORRIDOR": 3,
+    "SEA5F_CORRIDOR": 4,
+    "SEB1F_CORRIDOR": 5,
+    "SEB2F_CORRIDOR": 6,
+    "SEB3F_CORRIDOR": 7,
+    "SEB4F_CORRIDOR": 8,
+    "SEC1F_CORRIDOR": 9,
+    "SEC2F_CORRIDOR": 10,
+    "SEC3F_CORRIDOR": 11,
+    "SEC4F_CORRIDOR": 12,
+    "SEC5F_CORRIDOR": 13
+  }
+}
