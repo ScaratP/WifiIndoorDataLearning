@@ -1,0 +1,724 @@
+{
+  "timestamp": "2025-10-18 07:52:51",
+  "file_info": {
+    "processed_files": [
+      {
+        "filename": "1001.json",
+        "total_records": 50,
+        "valid_records": 50,
+        "file_size": 807315
+      },
+      {
+        "filename": "11211126.json",
+        "total_records": 30,
+        "valid_records": 30,
+        "file_size": 982924
+      },
+      {
+        "filename": "11211126_2.json",
+        "total_records": 67,
+        "valid_records": 67,
+        "file_size": 2128661
+      },
+      {
+        "filename": "11211170行動裝置加分作業.json",
+        "total_records": 36,
+        "valid_records": 36,
+        "file_size": 531128
+      },
+      {
+        "filename": "11211170雲端加分作業.json",
+        "total_records": 50,
+        "valid_records": 50,
+        "file_size": 1279287
+      },
+      {
+        "filename": "123.json",
+        "total_records": 1,
+        "valid_records": 1,
+        "file_size": 37333
+      },
+      {
+        "filename": "27_wifi_reference_points_20251002_142900.json",
+        "total_records": 54,
+        "valid_records": 54,
+        "file_size": 713580
+      },
+      {
+        "filename": "se_all_13_filtered.json",
+        "total_records": 351,
+        "valid_records": 351,
+        "file_size": 30546784
+      },
+      {
+        "filename": "wifi_reference_points1.json",
+        "total_records": 59,
+        "valid_records": 59,
+        "file_size": 1398935
+      },
+      {
+        "filename": "wifi_reference_points2.json",
+        "total_records": 121,
+        "valid_records": 121,
+        "file_size": 3306764
+      },
+      {
+        "filename": "wifi_reference_points_20250909_150026.json",
+        "total_records": 1,
+        "valid_records": 1,
+        "file_size": 34034
+      },
+      {
+        "filename": "wifi_reference_points_20250909_150244.json",
+        "total_records": 1,
+        "valid_records": 1,
+        "file_size": 8362
+      },
+      {
+        "filename": "wifi_reference_points_20250909_151031.json",
+        "total_records": 22,
+        "valid_records": 22,
+        "file_size": 324748
+      },
+      {
+        "filename": "wifi_reference_points_20250910_085726.json",
+        "total_records": 7,
+        "valid_records": 7,
+        "file_size": 141733
+      },
+      {
+        "filename": "wifi_reference_points_20250910_152456.json",
+        "total_records": 2,
+        "valid_records": 1,
+        "file_size": 13821
+      },
+      {
+        "filename": "wifi_reference_points_20250910_152457.json",
+        "total_records": 1,
+        "valid_records": 0,
+        "file_size": 3331
+      },
+      {
+        "filename": "wifi_reference_points_20250919_171940.json",
+        "total_records": 28,
+        "valid_records": 28,
+        "file_size": 712498
+      },
+      {
+        "filename": "wifi_reference_points_20250919_174350.json",
+        "total_records": 62,
+        "valid_records": 62,
+        "file_size": 1555468
+      },
+      {
+        "filename": "wifi_reference_points_20250921_150313.json",
+        "total_records": 31,
+        "valid_records": 31,
+        "file_size": 714024
+      },
+      {
+        "filename": "wifi_reference_points_20250921_151816.json",
+        "total_records": 57,
+        "valid_records": 57,
+        "file_size": 1438765
+      },
+      {
+        "filename": "wifi_reference_points_20251001_11111181.json",
+        "total_records": 42,
+        "valid_records": 42,
+        "file_size": 1771842
+      },
+      {
+        "filename": "wifi_reference_points_20251001_130328.json",
+        "total_records": 60,
+        "valid_records": 60,
+        "file_size": 1820875
+      },
+      {
+        "filename": "wifi_reference_points_20251001_170559.json",
+        "total_records": 223,
+        "valid_records": 223,
+        "file_size": 8468788
+      },
+      {
+        "filename": "wifi_reference_points_20251001_170756.json",
+        "total_records": 50,
+        "valid_records": 50,
+        "file_size": 2110916
+      },
+      {
+        "filename": "wifi_reference_points_20251001_180615.json",
+        "total_records": 228,
+        "valid_records": 228,
+        "file_size": 6795990
+      },
+      {
+        "filename": "wifi_reference_points_20251001_181719.json",
+        "total_records": 144,
+        "valid_records": 144,
+        "file_size": 5628608
+      },
+      {
+        "filename": "wifi_reference_points_20251002_084255.json",
+        "total_records": 10,
+        "valid_records": 10,
+        "file_size": 333938
+      },
+      {
+        "filename": "wifi_reference_points_20251002_084748.json",
+        "total_records": 10,
+        "valid_records": 10,
+        "file_size": 331385
+      },
+      {
+        "filename": "wifi_reference_points_20251002_085335.json",
+        "total_records": 10,
+        "valid_records": 10,
+        "file_size": 255362
+      },
+      {
+        "filename": "wifi_reference_points_20251002_085353.json",
+        "total_records": 39,
+        "valid_records": 39,
+        "file_size": 1766549
+      },
+      {
+        "filename": "wifi_reference_points_20251002_090357.json",
+        "total_records": 15,
+        "valid_records": 15,
+        "file_size": 358018
+      },
+      {
+        "filename": "wifi_reference_points_20251002_090845.json",
+        "total_records": 10,
+        "valid_records": 10,
+        "file_size": 211735
+      },
+      {
+        "filename": "wifi_reference_points_20251002_091054.json",
+        "total_records": 34,
+        "valid_records": 34,
+        "file_size": 1231455
+      },
+      {
+        "filename": "wifi_reference_points_20251002_114533.json",
+        "total_records": 50,
+        "valid_records": 49,
+        "file_size": 1556751
+      },
+      {
+        "filename": "wifi_reference_points_20251002_115145.json",
+        "total_records": 50,
+        "valid_records": 49,
+        "file_size": 1527023
+      },
+      {
+        "filename": "wifi_reference_points_20251002_115359 (1).json",
+        "total_records": 25,
+        "valid_records": 25,
+        "file_size": 658321
+      },
+      {
+        "filename": "wifi_reference_points_20251002_115359.json",
+        "total_records": 25,
+        "valid_records": 25,
+        "file_size": 658321
+      },
+      {
+        "filename": "wifi_reference_points_20251002_120021.json",
+        "total_records": 50,
+        "valid_records": 50,
+        "file_size": 966019
+      },
+      {
+        "filename": "wifi_reference_points_20251002_120033 (1).json",
+        "total_records": 56,
+        "valid_records": 56,
+        "file_size": 1262417
+      },
+      {
+        "filename": "wifi_reference_points_20251002_120033.json",
+        "total_records": 56,
+        "valid_records": 56,
+        "file_size": 1262417
+      },
+      {
+        "filename": "wifi_reference_points_20251002_142036.json",
+        "total_records": 50,
+        "valid_records": 50,
+        "file_size": 573875
+      },
+      {
+        "filename": "wifi_reference_points_20251002_142522.json",
+        "total_records": 56,
+        "valid_records": 56,
+        "file_size": 1514515
+      },
+      {
+        "filename": "wifi_reference_points_20251003_170140.json",
+        "total_records": 54,
+        "valid_records": 54,
+        "file_size": 1154496
+      },
+      {
+        "filename": "wifi_reference_points_20251003_170144.json",
+        "total_records": 56,
+        "valid_records": 56,
+        "file_size": 1719923
+      },
+      {
+        "filename": "wifi_reference_points_20251003_222235.json",
+        "total_records": 30,
+        "valid_records": 29,
+        "file_size": 1741958
+      },
+      {
+        "filename": "wifi_reference_points_20251003_223149.json",
+        "total_records": 31,
+        "valid_records": 31,
+        "file_size": 1084301
+      },
+      {
+        "filename": "wifi_reference_points_20251004_171526.json",
+        "total_records": 53,
+        "valid_records": 53,
+        "file_size": 1652794
+      },
+      {
+        "filename": "wifi_reference_points_20251004_182506.json",
+        "total_records": 52,
+        "valid_records": 52,
+        "file_size": 2546065
+      },
+      {
+        "filename": "wifi_reference_points_20251005_181059.json",
+        "total_records": 50,
+        "valid_records": 50,
+        "file_size": 1189611
+      },
+      {
+        "filename": "wifi_reference_points_20251005_181330.json",
+        "total_records": 69,
+        "valid_records": 68,
+        "file_size": 1569024
+      },
+      {
+        "filename": "wifi_reference_points_20251005_183325.json",
+        "total_records": 42,
+        "valid_records": 42,
+        "file_size": 1534533
+      },
+      {
+        "filename": "wifi_reference_points_20251005_184217.json",
+        "total_records": 25,
+        "valid_records": 25,
+        "file_size": 835466
+      },
+      {
+        "filename": "wifi_reference_points_20251005_191900.json",
+        "total_records": 25,
+        "valid_records": 25,
+        "file_size": 360895
+      },
+      {
+        "filename": "wifi_reference_points_20251008_152541.json",
+        "total_records": 71,
+        "valid_records": 71,
+        "file_size": 3791300
+      }
+    ],
+    "total_files": 54,
+    "total_records": 2882,
+    "valid_records": 2876
+  },
+  "data_stats": {
+    "num_reference_points": 2876,
+    "num_bssids": 556,
+    "bssid_info": [
+      {
+        "ssid": "ap-nttu",
+        "bssid": "04:d5:90:2a:76:a0"
+      },
+      {
+        "ssid": "ap-nttu",
+        "bssid": "04:d5:90:2a:79:a0"
+      },
+      {
+        "ssid": "ap-nttu",
+        "bssid": "04:d5:90:2a:b1:08"
+      },
+      {
+        "ssid": "ap-nttu",
+        "bssid": "08:5b:0e:0f:c1:b3"
+      },
+      {
+        "ssid": "ap-nttu",
+        "bssid": "48:3a:02:00:ac:48"
+      },
+      "..."
+    ]
+  },
+  "building_floor_stats": {
+    "total_points": 2876,
+    "buildings": {
+      "sec": {
+        "count": 1008,
+        "percentage": 35.04867872044507
+      },
+      "seb": {
+        "count": 876,
+        "percentage": 30.45897079276773
+      },
+      "sea": {
+        "count": 992,
+        "percentage": 34.4923504867872
+      }
+    },
+    "floors": {
+      "3": {
+        "count": 931,
+        "percentage": 32.37134909596662
+      },
+      "4": {
+        "count": 543,
+        "percentage": 18.88038942976356
+      },
+      "5": {
+        "count": 214,
+        "percentage": 7.440890125173853
+      },
+      "2": {
+        "count": 665,
+        "percentage": 23.12239221140473
+      },
+      "1": {
+        "count": 523,
+        "percentage": 18.184979137691236
+      }
+    },
+    "building_floor_combinations": {
+      "sec-3": {
+        "count": 418,
+        "percentage": 14.534075104311544
+      },
+      "sec-4": {
+        "count": 339,
+        "percentage": 11.78720445062587
+      },
+      "sec-5": {
+        "count": 153,
+        "percentage": 5.319888734353269
+      },
+      "seb-3": {
+        "count": 332,
+        "percentage": 11.543810848400557
+      },
+      "seb-2": {
+        "count": 234,
+        "percentage": 8.136300417246176
+      },
+      "sea-2": {
+        "count": 375,
+        "percentage": 13.038942976356049
+      },
+      "sea-1": {
+        "count": 322,
+        "percentage": 11.196105702364395
+      },
+      "sea-3": {
+        "count": 181,
+        "percentage": 6.29346314325452
+      },
+      "sec-1": {
+        "count": 42,
+        "percentage": 1.4603616133518775
+      },
+      "seb-1": {
+        "count": 159,
+        "percentage": 5.528511821974965
+      },
+      "sec-2": {
+        "count": 56,
+        "percentage": 1.9471488178025034
+      },
+      "sea-4": {
+        "count": 53,
+        "percentage": 1.842837273991655
+      },
+      "sea-5": {
+        "count": 61,
+        "percentage": 2.121001390820584
+      },
+      "seb-4": {
+        "count": 151,
+        "percentage": 5.250347705146036
+      }
+    }
+  },
+  "point_stats": {
+    "room_points_count": 187,
+    "corridor_points_count": 14,
+    "corridor_examples": [
+      "SEA1F_CORRIDOR",
+      "SEA2F_CORRIDOR",
+      "SEA3F_CORRIDOR",
+      "SEA4F_CORRIDOR",
+      "SEA5F_CORRIDOR"
+    ]
+  },
+  "signal_stats": {
+    "missing_percentage": 95.01205711369708,
+    "rss_range": {
+      "min": -101.0,
+      "max": -23.0
+    },
+    "normalized_range": {
+      "min": -0.6441904306411743,
+      "max": 47.94789123535156
+    }
+  },
+  "target_ssids": [
+    "eduroam",
+    "ap2-nttu",
+    "ap-nttu",
+    "nttu"
+  ],
+  "building_mapping": {
+    "sea": 0,
+    "seb": 1,
+    "sec": 2
+  },
+  "floor_mapping": {
+    "1": 0,
+    "2": 1,
+    "3": 2,
+    "4": 3,
+    "5": 4
+  },
+  "point_mapping_count": 201,
+  "data_quality_analysis": {
+    "building_counts": {
+      "building_ids": [
+        0,
+        1,
+        2
+      ],
+      "counts": [
+        992,
+        876,
+        1008
+      ]
+    },
+    "building_imbalance": {
+      "min_count": 876,
+      "max_count": 1008,
+      "imbalance_ratio": 1.1506849315068493
+    },
+    "building_signal_quality": {
+      "0": {
+        "missing_rate": 0.9526844250406127,
+        "mean_signal": -70.23799896240234,
+        "std_signal": 15.264793395996094,
+        "sample_count": 992
+      },
+      "1": {
+        "missing_rate": 0.9392390197431096,
+        "mean_signal": -73.17382049560547,
+        "std_signal": 14.395164489746094,
+        "sample_count": 876
+      },
+      "2": {
+        "missing_rate": 0.9570539996574169,
+        "mean_signal": -73.4005126953125,
+        "std_signal": 14.67297649383545,
+        "sample_count": 1008
+      }
+    },
+    "important_aps": [
+      {
+        "ap_idx": 101,
+        "importance": 266.98911648873604,
+        "building_means": [
+          -59.5625,
+          -55.23439025878906,
+          -91.85713958740234
+        ]
+      },
+      {
+        "ap_idx": 346,
+        "importance": 224.089292272007,
+        "building_means": [
+          -61.77777862548828,
+          -56.844512939453125,
+          -90.77777862548828
+        ]
+      },
+      {
+        "ap_idx": 234,
+        "importance": 221.17552992996448,
+        "building_means": [
+          -67.0,
+          -56.55354309082031,
+          -92.0
+        ]
+      },
+      {
+        "ap_idx": 496,
+        "importance": 207.47594545076652,
+        "building_means": [
+          -74.45454406738281,
+          -56.387603759765625,
+          -91.66666412353516
+        ]
+      },
+      {
+        "ap_idx": 416,
+        "importance": 204.96570793860397,
+        "building_means": [
+          -54.0625,
+          -55.53963088989258,
+          -85.14425659179688
+        ]
+      },
+      {
+        "ap_idx": 63,
+        "importance": 204.16666666666666,
+        "building_means": [
+          -100.0,
+          -50.0,
+          -85.0
+        ]
+      },
+      {
+        "ap_idx": 376,
+        "importance": 192.66666666666666,
+        "building_means": [
+          -100.0,
+          -51.0,
+          -85.0
+        ]
+      },
+      {
+        "ap_idx": 534,
+        "importance": 192.66666666666666,
+        "building_means": [
+          -100.0,
+          -50.0,
+          -84.0
+        ]
+      },
+      {
+        "ap_idx": 213,
+        "importance": 181.5,
+        "building_means": [
+          -100.0,
+          -51.0,
+          -84.0
+        ]
+      },
+      {
+        "ap_idx": 20,
+        "importance": 159.38908451676576,
+        "building_means": [
+          -89.0,
+          -62.21846008300781,
+          -89.0
+        ]
+      },
+      {
+        "ap_idx": 364,
+        "importance": 157.61730489388313,
+        "building_means": [
+          -59.599998474121094,
+          -86.5999984741211,
+          -60.351356506347656
+        ]
+      },
+      {
+        "ap_idx": 153,
+        "importance": 144.6969168580092,
+        "building_means": [
+          -87.75,
+          -62.689273834228516,
+          -88.63999938964844
+        ]
+      },
+      {
+        "ap_idx": 97,
+        "importance": 144.6620358475872,
+        "building_means": [
+          -75.24183654785156,
+          -66.19499969482422,
+          -95.0
+        ]
+      },
+      {
+        "ap_idx": 119,
+        "importance": 139.69544016419806,
+        "building_means": [
+          -56.44444274902344,
+          -83.11764526367188,
+          -60.032470703125
+        ]
+      },
+      {
+        "ap_idx": 209,
+        "importance": 138.85431628000353,
+        "building_means": [
+          -75.75641632080078,
+          -65.50753021240234,
+          -94.0
+        ]
+      },
+      {
+        "ap_idx": 462,
+        "importance": 138.31718262759708,
+        "building_means": [
+          -69.89200592041016,
+          -78.47948455810547,
+          -98.0
+        ]
+      },
+      {
+        "ap_idx": 412,
+        "importance": 137.08439482936066,
+        "building_means": [
+          -88.25,
+          -63.64441680908203,
+          -88.7066650390625
+        ]
+      },
+      {
+        "ap_idx": 286,
+        "importance": 135.55624123574754,
+        "building_means": [
+          -87.66666412353516,
+          -63.756248474121094,
+          -89.17333221435547
+        ]
+      },
+      {
+        "ap_idx": 33,
+        "importance": 131.4926922939226,
+        "building_means": [
+          -88.4000015258789,
+          -65.57638549804688,
+          -91.16666412353516
+        ]
+      },
+      {
+        "ap_idx": 252,
+        "importance": 123.89829558437083,
+        "building_means": [
+          -60.099998474121094,
+          -83.8499984741211,
+          -60.37778091430664
+        ]
+      }
+    ]
+  },
+  "processing_time": {
+    "seconds": 2.532327,
+    "formatted": "0:00:02.532327"
+  }
+}

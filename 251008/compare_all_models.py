@@ -193,7 +193,7 @@ class ModelComparison:
             corrupted_test_x = corrupted_test_x + noise
             
             # 確保 RSSI 值保持在合理範圍內
-            corrupted_test_x = np.clip(corrupted_test_x, -120, -30)
+            corrupted_test_x = np.clip(corrupted_test_x, -120, 0)
             
             # 驗證雜訊是否有效應用
             after_mean = np.mean(corrupted_test_x)

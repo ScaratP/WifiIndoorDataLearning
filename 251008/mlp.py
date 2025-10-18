@@ -7,6 +7,8 @@ from tensorflow.keras.optimizers import Adam
 import json
 import pickle
 import pandas as pd
+import time
+
 
 # 添加 TFLite 驗證函數的導入
 try:
@@ -197,6 +199,7 @@ def convert_numpy_types(obj):
     else:
         return obj
 
+# ...existing code...
 def train_mlp_model(hadnn_data_dir, output_dir="./models"):
     """訓練MLP深度學習模型，取代隨機森林"""
     # 載入數據
@@ -293,26 +296,18 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
     print(f"位置標籤形狀: {train_c.shape}")
     print(f"樓層標籤形狀: {train_y.shape}")
     
-    # 創建簡化的MLP模型
+    # 創建MLP模型
     try:
         print("創建MLP模型...")
-        # 確保使用 Python 原生整數類型
         input_dim = int(train_x.shape[1])
         n_buildings_int = int(n_buildings)
         n_floors_int = int(n_floors)
-        
-        print(f"Debug資訊 - 特徵維度: {input_dim} (型別: {type(input_dim)}), "
-              f"建築物類別: {n_buildings_int} (型別: {type(n_buildings_int)}), "
-              f"樓層類別: {n_floors_int} (型別: {type(n_floors_int)})")
-        
+        print(f"Debug資訊 - 特徵維度: {input_dim} (型別: {type(input_dim)}), 建築物類別: {n_buildings_int} (型別: {type(n_buildings_int)}), 樓層類別: {n_floors_int} (型別: {type(n_floors_int)})")
         mlp = mlp_model(input_dim, n_buildings_int, n_floors_int)
         mlp.summary()
-        
-        # 測試模型是否能接受正確形狀的輸入
         dummy_input = np.random.random((1, input_dim))
         test_output = mlp.predict(dummy_input)
         print("模型測試成功，輸出形狀：", [out.shape for out in test_output])
-        
     except Exception as e:
         print(f"創建模型失敗: {e}")
         print(f"Debug資訊 - 特徵維度: {train_x.shape[1]}, 建築物類別: {n_buildings}, 樓層類別: {n_floors}")
@@ -320,26 +315,49 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
     
     # 設置回調函數
     callbacks = [
-        ReduceLROnPlateau(
-            monitor='val_loss',
-            factor=0.5,
-            patience=5,
-            min_lr=0.00001
-        ),
-        EarlyStopping(
-            monitor='val_loss',
-            patience=10,
-            restore_best_weights=True
-        ),
-        # 加入建築判斷準確度的監控回調
+        ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5, min_lr=0.00001),
+        EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
         BuildingAccuracyCallback(threshold=0.95, patience=3)
     ]
-    
+
+    # 加入訓練計時與可觀測性
+    class TimeHistory(tf.keras.callbacks.Callback):
+        def on_train_begin(self, logs=None):
+            self.epoch_times = []
+            self.train_start = time.time()
+        def on_epoch_begin(self, epoch, logs=None):
+            self._t0 = time.time()
+        def on_epoch_end(self, epoch, logs=None):
+            dt = time.time() - self._t0
+            self.epoch_times.append(dt)
+            print(f"[Timing] Epoch {epoch+1} 用時: {dt:.3f}s")
+        def on_train_end(self, logs=None):
+            total = time.time() - self.train_start
+            if self.epoch_times:
+                print(f"[Timing] 平均每輪: {np.mean(self.epoch_times):.3f}s, 中位數: {np.median(self.epoch_times):.3f}s, 總訓練時間: {total:.2f}s")
+            else:
+                print(f"[Timing] 總訓練時間: {total:.2f}s")
+
+    callbacks.append(TimeHistory())
+
+    # 訓練設定與可觀測性輸出
+    epochs = 50
+    batch_size = 64
+    val_split = 0.2
+    n_train = train_x_enhanced.shape[0]
+    val_samples = int(n_train * val_split)
+    n_train_eff = n_train - val_samples
+    steps_per_epoch = int(np.ceil(n_train_eff / batch_size))
+    gpus = tf.config.list_physical_devices('GPU')
+    print(f"訓練樣本數: {n_train} (有效訓練: {n_train_eff}, 驗證: {val_samples}), 批次大小: {batch_size}, 每輪步數: {steps_per_epoch}")
+    print(f"可用裝置 - GPU: {len(gpus)} 台, CPU: {len(tf.config.list_physical_devices('CPU'))} 台")
+
     # 確保標籤是正確的形狀
     train_b = train_b.reshape(-1)
     train_y = train_y.reshape(-1)
-    
+
     # 訓練MLP模型
+    fit_start = time.time()
     history = mlp.fit(
         train_x_enhanced,
         {
@@ -347,18 +365,21 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
             'floor_output': train_y,
             'position_output': train_c
         },
-        epochs=50,  # 減少訓練輪數避免過度擬合
-        batch_size=64,  # 增加批次大小提高穩定性
-        validation_split=0.2,
+        epochs=epochs,
+        batch_size=batch_size,
+        validation_split=val_split,
         callbacks=callbacks,
         verbose=1
     )
+    fit_total = time.time() - fit_start
+    trained_epochs = len(history.history.get('loss', []))
+    last_loss = history.history.get('loss', [None])[-1]
+    last_val_loss = history.history.get('val_loss', [None])[-1]
+    print(f"實際訓練的 epoch 數: {trained_epochs}/{epochs}, 最後一輪 loss: {last_loss}, val_loss: {last_val_loss}, 總訓練時間: {fit_total:.2f}s")
     
     # 儲存模型
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
-    
-    # 使用Python檔案名稱作為模型檔名
     model_name = 'mlp'
     
     # 儲存模型為 .h5 格式
@@ -368,8 +389,6 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
     
     # 儲存模型為 .tflite 格式
     print("正在轉換為 TensorFlow Lite 格式...")
-    
-    # 過濾警告訊息
     import warnings
     import logging
     warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
@@ -378,8 +397,6 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
     # 清理模型，移除訓練時的狀態
     model_for_conversion = tf.keras.models.clone_model(mlp)
     model_for_conversion.set_weights(mlp.get_weights())
-    
-    # 重新編譯模型以移除訓練相關的操作
     model_for_conversion.compile(
         optimizer='adam',
         loss={
@@ -388,18 +405,10 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
             'position_output': 'mse'
         }
     )
-    
     converter = tf.lite.TFLiteConverter.from_keras_model(model_for_conversion)
-    
-    # 修正：完全避免量化，保持完整精度
-    converter.optimizations = []  # 移除所有優化
+    converter.optimizations = []
     converter.target_spec.supported_types = [tf.float32]
-    converter.target_spec.supported_ops = [
-        tf.lite.OpsSet.TFLITE_BUILTINS,
-        tf.lite.OpsSet.SELECT_TF_OPS  # 支援更多 TensorFlow 操作
-    ]
-    
-    # 設置轉換選項以減少警告
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
     converter._experimental_lower_tensor_list_ops = False
     converter.allow_custom_ops = True
     
@@ -410,43 +419,36 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
         with open(tflite_path, 'wb') as f:
             f.write(tflite_model)
         print(f"✅ 模型已保存為 .tflite 格式: {tflite_path}")
-        
-        # 驗證轉換是否成功
         print("驗證 TFLite 模型...")
         interpreter_test = tf.lite.Interpreter(model_path=tflite_path)
         interpreter_test.allocate_tensors()
         print(f"✅ TFLite 模型載入成功，輸入形狀: {interpreter_test.get_input_details()[0]['shape']}")
         
-        # 驗證 TFLite 模型的準確性
-        if verify_tflite_accuracy is not None:
+        # 驗證 TFLite 模型的準確性（若提供）
+        try:
+            from tflite_validator import verify_tflite_accuracy, compare_model_sizes
             print("驗證 TFLite 模型準確性...")
             verify_success = verify_tflite_accuracy(
-                mlp, 
-                tflite_path, 
-                test_x_enhanced[:50],  # 增加驗證樣本數
-                test_b[:50], 
-                test_y[:50], 
+                mlp,
+                tflite_path,
+                test_x_enhanced[:50],
+                test_b[:50],
+                test_y[:50],
                 test_c[:50],
-                tolerance=1e-4  # 降低容忍度，要求更高精度
+                tolerance=1e-4
             )
-            
             if verify_success:
                 print("✅ TFLite 轉換驗證成功")
             else:
                 print("⚠️  TFLite 轉換存在精度差異，但模型已保存")
-                
-            # 比較模型大小
-            if compare_model_sizes is not None:
-                compare_model_sizes(h5_path, tflite_path)
-        else:
-            print("⚠️  跳過 TFLite 模型驗證（驗證函數不可用）")
-        
+            compare_model_sizes(h5_path, tflite_path)
+        except Exception:
+            print("⚠️  跳過 TFLite 模型驗證（驗證模組不可用）")
     except Exception as e:
         print(f"❌ TFLite 轉換失敗: {e}")
         import traceback
         traceback.print_exc()
     finally:
-        # 恢復警告設置
         warnings.resetwarnings()
         logging.getLogger("tensorflow").setLevel(logging.INFO)
     
@@ -471,16 +473,14 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
     floor_pred = np.argmax(predictions[1], axis=1)
     position_pred = predictions[2]
     
-    # 計算各項指標
+    # 指標
     building_accuracy = np.mean(building_pred == test_b) * 100
     floor_accuracy = np.mean(floor_pred == test_y) * 100
-    
-    # 計算位置預測誤差
     position_errors = np.sqrt(np.sum((test_c - position_pred) ** 2, axis=1))
     mean_error = np.mean(position_errors)
     median_error = np.median(position_errors)
     
-    # 生成評估摘要
+    # 生成與儲存摘要
     evaluation_summary = generate_evaluation_summary(
         'MLP深度學習模型',
         building_accuracy,
@@ -494,15 +494,12 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
         floor_pred,
         results
     )
-    
-    # 儲存評估摘要
     summary_path = os.path.join(output_dir, 'mlp.txt')
     with open(summary_path, 'w', encoding='utf-8') as f:
         f.write(evaluation_summary)
-    
     print(f"評估摘要已儲存至: {summary_path}")
     
-    # 整理結果，轉換NumPy類型
+    # JSON 結果
     results_dict = {
         'building_accuracy': float(building_accuracy),
         'floor_accuracy': float(floor_accuracy),
@@ -510,13 +507,12 @@ def train_mlp_model(hadnn_data_dir, output_dir="./models"):
         'median_position_error': float(median_error),
         'model_results': [float(r) for r in results]
     }
-    
-    # 儲存結果為JSON格式，使用自定義編碼器處理NumPy類型
     with open(os.path.join(output_dir, f'{model_name}_results.json'), 'w') as f:
         json.dump(results_dict, f, indent=2, cls=NpEncoder)
     
     print(f"MLP深度學習模型訓練和評估完成。模型已保存在 {output_dir}")
     return mlp, results_dict
+# ...existing code...
 
 def generate_evaluation_summary(model_name, building_accuracy, floor_accuracy, 
                                mean_error, median_error, position_errors, 
