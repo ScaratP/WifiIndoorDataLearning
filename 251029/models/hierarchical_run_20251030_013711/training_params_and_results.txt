@@ -1,0 +1,28 @@
+--- Hyperparameters ---
+timestamp: 20251030_013711
+script_name: train_hierarchical_classifier.py
+data_dir_split: hadnn_data_split
+data_dir_proc: processed_data
+attention_units: 256
+num_heads: 8
+dense_units_1: 1024
+dense_units_2: 512
+branch_dense_units: 256
+dropout_rate: 0.3
+l2_reg: 0.0005
+learning_rate: 0.0001
+epochs: 150
+batch_size: 32
+early_stopping_patience: 25
+lr_reduce_patience: 10
+add_noise: False
+noise_stddev: N/A
+
+--- Training Results ---
+epochs_run: 124
+final_total_loss: 0.5333
+final_building_loss: 0.1688
+final_floor_loss: 0.1484
+final_building_accuracy: 0.9498
+final_floor_accuracy: 0.9614
+final_group_accuracy: 0.9614
