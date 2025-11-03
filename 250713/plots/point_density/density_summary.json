@@ -1,0 +1,215 @@
+{
+  "total_images": 8,
+  "total_points": 1644,
+  "total_wifi_rssi": 609259,
+  "valid_wifi_rssi": 609259,
+  "points_with_wifi": 1404,
+  "images": [
+    {
+      "imageId": "2131165295",
+      "building": "SEA",
+      "floor": 1,
+      "count": 482,
+      "wifi_total": 203055,
+      "wifi_valid": 203055,
+      "building_breakdown": {
+        "SEC": 89,
+        "SEB": 166,
+        "SEA": 227
+      },
+      "building_wifi_valid_counts": {
+        "SEA": 78818,
+        "SEB": 83442,
+        "SEC": 40795
+      },
+      "building_wifi_shares_percent": {
+        "SEA": 38.81608431213218,
+        "SEB": 41.09329984486962,
+        "SEC": 20.0906158429982
+      },
+      "x_min": 12.398858070373535,
+      "x_max": 90.61561584472656,
+      "y_min": 12.71645736694336,
+      "y_max": 88.41331481933594
+    },
+    {
+      "imageId": "2131165296",
+      "building": "SEA",
+      "floor": 2,
+      "count": 318,
+      "wifi_total": 121279,
+      "wifi_valid": 121279,
+      "building_breakdown": {
+        "SEC": 114,
+        "SEB": 77,
+        "SEA": 127
+      },
+      "building_wifi_valid_counts": {
+        "SEA": 44881,
+        "SEB": 32357,
+        "SEC": 44041
+      },
+      "building_wifi_shares_percent": {
+        "SEA": 37.00640671509495,
+        "SEB": 26.67980441791242,
+        "SEC": 36.31378886699264
+      },
+      "x_min": 20.86558723449707,
+      "x_max": 93.48053741455078,
+      "y_min": 18.83325958251953,
+      "y_max": 89.62120056152344
+    },
+    {
+      "imageId": "2131165297",
+      "building": "SEA",
+      "floor": 3,
+      "count": 249,
+      "wifi_total": 97945,
+      "wifi_valid": 97945,
+      "building_breakdown": {
+        "SEA": 124,
+        "SEC": 65,
+        "SEB": 60
+      },
+      "building_wifi_valid_counts": {
+        "SEA": 44135,
+        "SEB": 23352,
+        "SEC": 30458
+      },
+      "building_wifi_shares_percent": {
+        "SEA": 45.06100362448313,
+        "SEB": 23.84195211598346,
+        "SEC": 31.097044259533412
+      },
+      "x_min": 23.275197982788086,
+      "x_max": 92.86146545410156,
+      "y_min": 18.696884155273438,
+      "y_max": 94.34064483642578
+    },
+    {
+      "imageId": "2131165298",
+      "building": "SEA",
+      "floor": 4,
+      "count": 122,
+      "wifi_total": 44979,
+      "wifi_valid": 44979,
+      "building_breakdown": {
+        "SEA": 122
+      },
+      "building_wifi_valid_counts": {
+        "SEA": 44979,
+        "SEB": 0,
+        "SEC": 0
+      },
+      "building_wifi_shares_percent": {
+        "SEA": 100.0,
+        "SEB": 0.0,
+        "SEC": 0.0
+      },
+      "x_min": 15.417096138000488,
+      "x_max": 88.79692840576172,
+      "y_min": 43.00105285644531,
+      "y_max": 76.60122680664062
+    },
+    {
+      "imageId": "2131165299",
+      "building": "SEA",
+      "floor": 5,
+      "count": 132,
+      "wifi_total": 22558,
+      "wifi_valid": 22558,
+      "building_breakdown": {
+        "SEA": 132
+      },
+      "building_wifi_valid_counts": {
+        "SEA": 22558,
+        "SEB": 0,
+        "SEC": 0
+      },
+      "building_wifi_shares_percent": {
+        "SEA": 100.0,
+        "SEB": 0.0,
+        "SEC": 0.0
+      },
+      "x_min": 23.033437728881836,
+      "x_max": 85.91199493408203,
+      "y_min": 56.188072204589844,
+      "y_max": 75.8477783203125
+    },
+    {
+      "imageId": "2131165300",
+      "building": "SEB",
+      "floor": 4,
+      "count": 126,
+      "wifi_total": 52163,
+      "wifi_valid": 52163,
+      "building_breakdown": {
+        "SEB": 126
+      },
+      "building_wifi_valid_counts": {
+        "SEA": 0,
+        "SEB": 52163,
+        "SEC": 0
+      },
+      "building_wifi_shares_percent": {
+        "SEA": 0.0,
+        "SEB": 100.0,
+        "SEC": 0.0
+      },
+      "x_min": 19.283390045166016,
+      "x_max": 90.3544692993164,
+      "y_min": 45.721649169921875,
+      "y_max": 77.7732162475586
+    },
+    {
+      "imageId": "2131165301",
+      "building": "SEC",
+      "floor": 4,
+      "count": 120,
+      "wifi_total": 37065,
+      "wifi_valid": 37065,
+      "building_breakdown": {
+        "SEC": 120
+      },
+      "building_wifi_valid_counts": {
+        "SEA": 0,
+        "SEB": 0,
+        "SEC": 37065
+      },
+      "building_wifi_shares_percent": {
+        "SEA": 0.0,
+        "SEB": 0.0,
+        "SEC": 100.0
+      },
+      "x_min": 28.22801971435547,
+      "x_max": 89.43525695800781,
+      "y_min": 50.31858825683594,
+      "y_max": 88.87684631347656
+    },
+    {
+      "imageId": "2131165302",
+      "building": "SEC",
+      "floor": 5,
+      "count": 95,
+      "wifi_total": 30215,
+      "wifi_valid": 30215,
+      "building_breakdown": {
+        "SEC": 95
+      },
+      "building_wifi_valid_counts": {
+        "SEA": 0,
+        "SEB": 0,
+        "SEC": 30215
+      },
+      "building_wifi_shares_percent": {
+        "SEA": 0.0,
+        "SEB": 0.0,
+        "SEC": 100.0
+      },
+      "x_min": 18.232425689697266,
+      "x_max": 76.36027526855469,
+      "y_min": 49.25013732910156,
+      "y_max": 63.762664794921875
+    }
+  ]
+}

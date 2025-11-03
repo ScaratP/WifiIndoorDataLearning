@@ -1,0 +1,57 @@
+✅【資料預處理】實作 1+8 資料分割：
+
+參考我上次提供的程式碼，修改 preprocess/hadnn_adapter.py (或建立新檔)。
+
+確保 define_groups 函數能正確根據 building 和 floor 產生 se1 到 sec5 的群組標籤。
+
+執行腳本，產生新的資料夾 (例如 hadnn_data_split)，裡面包含分類器和 8 個回歸器所需的 npy 檔案及 json 設定檔。
+
+✅【模型訓練】訓練「模型一：Group Classifier」：
+
+建立分類器模型腳本：
+
+選項 A (MLP)：修改 mlp.py，移除座標輸出，最終輸出改為 8 個類別 (Softmax)。
+
+選項 B (階層式)：修改 original_hadnn.py，移除座標輸出。你需要決定是直接輸出 8 類，還是輸出 (建築, 樓層) 再組合。
+
+訓練：使用 hadnn_data_split 資料夾中的 train_x_classifier.npy 和 train_y_classifier.npy 進行訓練。
+
+(可選) 傳統模型：使用 Scikit-learn 訓練 RandomForest 或其他分類器作為比較基準。
+
+評估與轉換：比較不同分類器的準確率，並將你選擇的 DNN 模型轉換成 classifier.tflite。
+
+✅【模型訓練】訓練「模型二～九：Coordinate Regressors」：
+
+建立回歸器模型腳本：設計至少一種座標回歸模型架構 (例如：中層 MLP，輸入 RSSI 維度，輸出 2 維線性)。
+
+迴圈訓練：寫一個 Python 迴圈，迭代 8 次 (從 se1 到 sec5)：
+
+載入對應群組的資料 (例如 train_x_se1.npy, train_c_se1.npy)。
+
+訓練你的回歸器模型。
+
+將訓練好的模型儲存/轉換成對應的 TFLite 檔案 (例如 coord_se1.tflite)。
+
+(可選) 傳統模型：同樣可以在迴圈中，用 K-NN 或 RandomForest 訓練 8 個回歸器，用於比較誤差。
+
+✅【系統評估】端對端 (End-to-End) 誤差評估：
+
+撰寫評估腳本：模擬 Android APP 的流程：
+
+載入測試資料 (例如 test_x_classifier.npy)。
+
+用 classifier.tflite 預測群組 ID。
+
+根據群組 ID，載入對應的座標回歸器 TFLite (例如 coord_se1.tflite)。
+
+用回歸器預測標準化後的座標 (scaled_x, scaled_y)。
+
+讀取 coord_scaler_config.json 取得該群組的 mean 和 std。
+
+反標準化 (Unscale) 座標，得到地圖上的真實座標 (final_x, final_y)。
+
+計算預測座標與真實測試座標 (test_c_se1.npy 反標準化後) 之間的歐幾里得距離 (Euclidean Distance)。
+
+計算平均誤差：計算所有測試樣本的平均距離誤差 (單位：公尺)。
+
+比較：比較不同系統組合 (不同分類器 + 不同回歸器) 的平均誤差，以及與你原始混合訓練模型的誤差。
