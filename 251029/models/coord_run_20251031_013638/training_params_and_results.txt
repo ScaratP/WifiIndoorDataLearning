@@ -1,0 +1,41 @@
+--- Hyperparameters (BASE) ---
+ATTENTION_UNITS: 256
+NUM_HEADS: 8
+DENSE_UNITS_1: 1024
+DENSE_UNITS_2: 512
+DROPOUT_RATE: 0.3
+L2_REG: 0.0005
+LEARNING_RATE: 0.0001
+EPOCHS: 500
+BATCH_SIZE: 32
+EARLY_STOPPING_PATIENCE: 50
+LR_REDUCE_PATIENCE: 15
+
+--- Hyperparameters (LARGE) ---
+ATTENTION_UNITS: 512
+NUM_HEADS: 8
+DENSE_UNITS_1: 2048
+DENSE_UNITS_2: 1024
+DROPOUT_RATE: 0.4
+L2_REG: 0.0001
+LEARNING_RATE: 0.0001
+EPOCHS: 800
+BATCH_SIZE: 32
+EARLY_STOPPING_PATIENCE: 75
+LR_REDUCE_PATIENCE: 15
+
+
+--- Training Results (All Groups) ---
+-----------------------------------------------------------------------------
+| 群組         | 平均定位誤差 (公尺)               | Epochs 運行       |
+-----------------------------------------------------------------------------
+| se1        | 34.71                     | 389             |
+| se2        | 20.07                     | 457             |
+| se3        | 37.03                     | 278             |
+| sea4       | 22.11                     | 338             |
+| sea5       | 21.27                     | 296             |
+| seb4       | 20.18                     | 418             |
+| sec4       | 26.24                     | 291             |
+| sec5       | 20.18                     | 190             |
+-----------------------------------------------------------------------------
+   所有 8 個有效群組的平均誤差: 25.22 公尺

@@ -1,0 +1,27 @@
+--- Hyperparameters (High Error Models) ---
+timestamp: 20251030_160942
+script_name: tune_high_error_models.py
+data_dir: hadnn_data_split
+config_dir: hadnn_data_split
+attention_units: 256
+num_heads: 8
+dense_units_1: 1024
+dense_units_2: 512
+dropout_rate: 0.5
+l2_reg: 0.005
+learning_rate: 0.0001
+epochs: 300
+batch_size: 32
+early_stopping_patience: 20
+lr_reduce_patience: 8
+
+
+--- Training Results (High Error Groups) ---
+-----------------------------------------------------
+| 群組         | 平均定位誤差 (公尺)               | Epochs 運行       |
+-----------------------------------------------------
+| se1        | 34.65                     | 154             |
+| se2        | 36.14                     | 144             |
+| se3        | 37.54                     | 142             |
+-----------------------------------------------------
+   所有 3 個有效群組的平均誤差: 36.11 公尺

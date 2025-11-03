@@ -1,16 +1,16 @@
 {
-  "timestamp": "2025-10-29 15:01:03",
+  "timestamp": "2025-10-30 22:41:36",
   "architecture": "1+8 Split Model (Classifier + 8 Regressors)",
   "target_ssids": [
+    "eduroam",
     "ap-nttu",
     "ap2-nttu",
-    "nttu",
-    "eduroam"
+    "nttu"
   ],
   "num_reference_points": 2588,
   "num_bssids": 526,
   "processing_time": {
-    "seconds": 1.900835,
-    "formatted": "0:00:01.900835"
+    "seconds": 2.55994,
+    "formatted": "0:00:02.559940"
   }
 }

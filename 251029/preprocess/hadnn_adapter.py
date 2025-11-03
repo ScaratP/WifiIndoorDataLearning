@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import os
 
-# --- 新增/修改：定義你的新群組規則 ---
+# --- define_groups 函數 (保持不變) ---
 def define_groups(df):
     """
     根據 building 和 floor 欄位，建立新的群組規則：
@@ -30,11 +30,8 @@ def define_groups(df):
         df['floor'] = df['floor'].astype(int)
 
         # --- 新規則 ---
-        # 合併所有建築的 1 樓為 se1
         df.loc[df['floor'] == 1, 'group'] = 'se1'
-        # 合併所有建築的 2 樓為 se2
         df.loc[df['floor'] == 2, 'group'] = 'se2'
-        # 合併所有建築的 3 樓為 se3
         df.loc[df['floor'] == 3, 'group'] = 'se3'
 
         # --- 維持不變的規則 ---
@@ -52,7 +49,7 @@ def define_groups(df):
     print("   ✅ 新群組定義完成。")
     return df
 
-# --- 主要的 prepare_split_data 函數 (保持不變) ---
+# --- ★ 修改：prepare_split_data 函數 ★ ---
 def prepare_split_data(data_path, output_dir):
     """
     為 1+N 模型（1個分類器 + N個回歸器）準備資料。
@@ -77,8 +74,26 @@ def prepare_split_data(data_path, output_dir):
         print(f"❌ 錯誤: 無法讀取 CSV 檔案: {e}")
         return
 
-    # *** 呼叫更新後的 define_groups ***
+    # *** 呼叫 define_groups (不變) ***
     df = define_groups(df)
+
+    # --- ★ 新增：檢查公尺座標並設定座標欄位 ★ ---
+    if 'x_meter' in df.columns and 'y_meter' in df.columns:
+        print("   ✅ 偵測到 'x_meter', 'y_meter' 欄位。將使用公尺座標進行訓練。")
+        coord_cols = ['x_meter', 'y_meter']
+        # 移除任何沒有成功校正的點 (以防萬一)
+        df.dropna(subset=coord_cols, inplace=True)
+    else:
+        print("   ⚠️ 警告: 找不到 'x_meter' 欄位。將退回使用 'x_percent', 'y_percent' (或 'x', 'y')。")
+        # 檢查 'x', 'y' 或 'x_percent', 'y_percent'
+        if 'x_percent' in df.columns:
+            coord_cols = ['x_percent', 'y_percent']
+        else:
+            coord_cols = ['x', 'y'] # 原始備案
+            
+    if coord_cols[0] not in df.columns:
+        print(f"❌ 錯誤: 找不到座標欄位 (嘗試了 'x_meter' 和 '{coord_cols[0]}')")
+        return
 
     # 檢查並顯示群組分布
     print("\n資料群組分布情況：")
@@ -96,58 +111,42 @@ def prepare_split_data(data_path, output_dir):
         print(f"\n保留用於訓練的總資料筆數: {len(df_filtered)}")
 
     # --- 2. 準備「模型一：Group Classifier」的資料 ---
+    # (此部分完全不變)
     print("\n[步驟 2/4] 正在準備『Group Classifier』(模型 1) 的資料...")
-
-    # 建立群組標籤 (ID 從 0 開始)
-    group_names = sorted(df_filtered['group'].unique()) # 自動偵測所有非 'other' 的群組名稱
+    group_names = sorted(df_filtered['group'].unique())
     print(f"   偵測到 {len(group_names)} 個有效群組: {group_names}")
-
     group_to_id = {name: i for i, name in enumerate(group_names)}
     id_to_group = {i: name for name, i in group_to_id.items()}
-
     df_filtered['group_id'] = df_filtered['group'].map(group_to_id)
-
-    # 提取 RSSI 特徵欄位名稱
     rss_columns = [col for col in df.columns if col.startswith('rss_')]
     if not rss_columns:
         print("❌ 錯誤：在 CSV 檔案中找不到任何 'rss_' 開頭的欄位。")
         return
-
-    # 提取 RSSI 數據和群組標籤
     x_all = df_filtered[rss_columns].values.astype(np.float32)
     y_all_group_ids = df_filtered['group_id'].values.astype(np.int32)
-
-    # 標準化 RSSI
     print("   正在將 RSSI 訊號縮放至 [0, 1] 範圍...")
     x_all_scaled = np.clip(x_all, -100.0, 0.0)
     x_all_scaled = (x_all_scaled + 100.0) / 100.0
     print(f"   RSSI 資料維度: {x_all_scaled.shape}")
-
-    # 分割訓練集和測試集
     print("   正在分割訓練集與測試集 (80/20)...")
     indices = np.arange(len(x_all_scaled))
     try:
         train_idx, test_idx = train_test_split(
-            indices,
-            test_size=0.2,
-            random_state=42,
-            stratify=y_all_group_ids
+            indices, test_size=0.2, random_state=42, stratify=y_all_group_ids
         )
     except ValueError as e:
          print(f"❌ 錯誤：無法進行分層抽樣。可能是某些群組的樣本數太少 (少於 2 筆)。錯誤訊息：{e}")
          print("   請檢查各群組的樣本數：\n", group_counts)
          return
-
-    # 儲存 NumPy 陣列檔案
     print("   正在儲存分類器的 npy 檔案...")
     np.save(os.path.join(output_dir, 'train_x_classifier.npy'), x_all_scaled[train_idx])
     np.save(os.path.join(output_dir, 'train_y_classifier.npy'), y_all_group_ids[train_idx])
     np.save(os.path.join(output_dir, 'test_x_classifier.npy'), x_all_scaled[test_idx])
     np.save(os.path.join(output_dir, 'test_y_classifier.npy'), y_all_group_ids[test_idx])
-
     print("   ✅ 分類器資料儲存完畢。")
     print(f"      訓練集大小: {len(train_idx)}, 測試集大小: {len(test_idx)}")
     print(f"      標籤 ID 映射: {group_to_id}")
+
 
     # --- 3. 準備 N 個「Coordinate Regressors」的資料 ---
     num_groups = len(group_names)
@@ -155,7 +154,7 @@ def prepare_split_data(data_path, output_dir):
 
     coord_scaler_config = {}
 
-    for group_name in group_names: # 使用偵測到的 group_names
+    for group_name in group_names: 
         print(f"\n   --- 處理群組: {group_name} ---")
 
         df_group = df_filtered[df_filtered['group'] == group_name]
@@ -166,12 +165,16 @@ def prepare_split_data(data_path, output_dir):
             continue
 
         x_group = df_group[rss_columns].values.astype(np.float32)
-        c_group_original = df_group[['x', 'y']].values.astype(np.float32)
+        
+        # --- ★★★ 關鍵修改 ★★★ ---
+        # 使用我們在步驟 1 偵測到的 coord_cols ('x_meter', 'y_meter')
+        c_group_original = df_group[coord_cols].values.astype(np.float32)
+        # --- ★★★ 修改完畢 ★★★ ---
 
         x_group_scaled = np.clip(x_group, -100.0, 0.0)
         x_group_scaled = (x_group_scaled + 100.0) / 100.0
 
-        print(f"      正在對 {group_name} 的座標進行獨立標準化...")
+        print(f"      正在對 {group_name} 的座標 ({coord_cols[0]}) 進行獨立標準化...")
         scaler = StandardScaler()
         c_group_scaled = scaler.fit_transform(c_group_original)
         print(f"      標準化後座標 Mean: {np.mean(c_group_scaled, axis=0)}, Std: {np.std(c_group_scaled, axis=0)}")
@@ -206,6 +209,7 @@ def prepare_split_data(data_path, output_dir):
         print(f"         訓練集大小: {len(train_idx_g)}, 測試集大小: {len(test_idx_g)}")
 
     # --- 4. 儲存所有 Config 檔案 ---
+    # (此部分完全不變)
     print("\n[步驟 4/4] 正在儲存設定檔...")
 
     coord_config_path = os.path.join(output_dir, 'coord_scaler_config.json')
@@ -224,7 +228,7 @@ def prepare_split_data(data_path, output_dir):
     except Exception as e:
         print(f"   ❌ 錯誤: 無法儲存分類器設定檔: {e}")
 
-# --- 主執行區塊 (保持不變) ---
+# --- 主執行區塊 (不變) ---
 if __name__ == "__main__":
     data_path = "../processed_data"
     output_dir = "../hadnn_data_split" # 輸出到同一個新資料夾

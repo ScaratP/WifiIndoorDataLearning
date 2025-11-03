@@ -8,8 +8,10 @@ import glob
 def extract_wifi_data_with_filter(folder_path, target_ssids=None):
     """
     從 scan13 資料夾中提取並過濾 WiFi 資料
+    (★ v2 修改版：不再計算平均值，而是回傳每一筆原始掃描)
     返回: (all_data, file_info)
     """
+    print("   [extract_and_filter]：正在提取資料 (v2 - 原始掃描模式)...")
     if target_ssids is None:
         target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam', 'nttu'}
     
@@ -17,11 +19,10 @@ def extract_wifi_data_with_filter(folder_path, target_ssids=None):
     file_info = {
         'processed_files': [],
         'total_files': 0,
-        'total_records': 0,
-        'valid_records': 0
+        'total_raw_records': 0,
+        'valid_scans_processed': 0 # <--- 修改：計算有效的「單筆掃描」
     }
     
-    # 讀取所有 JSON 檔案
     json_files = glob.glob(os.path.join(folder_path, '*.json'))
     file_info['total_files'] = len(json_files)
     
@@ -29,8 +30,8 @@ def extract_wifi_data_with_filter(folder_path, target_ssids=None):
         file_name = os.path.basename(json_file)
         file_stats = {
             'filename': file_name,
-            'total_records': 0,
-            'valid_records': 0,
+            'total_raw_records': 0,
+            'valid_scans': 0,
             'file_size': os.path.getsize(json_file)
         }
         
@@ -38,38 +39,30 @@ def extract_wifi_data_with_filter(folder_path, target_ssids=None):
             with open(json_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            file_stats['total_records'] = len(data)
-            file_info['total_records'] += len(data)
+            file_stats['total_raw_records'] = len(data)
+            file_info['total_raw_records'] += len(data)
             
+            # 遍歷 JSON 中的每一個「地點」
             for record in data:
-                if not record.get('wifiReadings'):
+                raw_readings = record.get('wifiReadings')
+                if not raw_readings:
                     continue
                     
-                # 過濾 SSID 並計算平均值
-                ssid_bssid_data = defaultdict(lambda: {'levels': [], 'bssid': None})
+                # --- ★★★ 關鍵修改 ★★★ ---
+                # 我們不再計算平均值 (avgReadings)
+                # 而是直接處理原始的 wifiReadings 列表
                 
-                for reading in record['wifiReadings']:
+                # 1. 先過濾一次，只保留 target_ssids
+                filtered_readings = []
+                for reading in raw_readings:
                     ssid = reading.get('ssid', '').lower()
-                    bssid = reading.get('bssid')
                     level = reading.get('level')
-                    
                     if ssid in target_ssids and level is not None:
-                        key = f"{ssid}_{bssid}"
-                        ssid_bssid_data[key]['levels'].append(level)
-                        ssid_bssid_data[key]['bssid'] = bssid
+                        filtered_readings.append(reading)
                 
-                # 計算平均值
-                avg_readings = []
-                for key, data in ssid_bssid_data.items():
-                    if data['levels']:
-                        ssid = key.split('_')[0]
-                        avg_readings.append({
-                            'ssid': ssid,
-                            'bssid': data['bssid'],
-                            'avgLevel': sum(data['levels']) / len(data['levels'])
-                        })
-                
-                if avg_readings:  # 只保留有目標 SSID 的點
+                # 2. 如果這個地點有收集到任何目標 SSID
+                if filtered_readings:
+                    # 把這個「地點的 metadata」和「過濾後的原始掃描列表」一起存入
                     all_data.append({
                         'id': record.get('id'),
                         'name': record.get('name'),
@@ -78,10 +71,11 @@ def extract_wifi_data_with_filter(folder_path, target_ssids=None):
                         'timestamp': record.get('timestamp'),
                         'imageId': record.get('imageId'),
                         'scanCount': record.get('scanCount'),
-                        'avgReadings': avg_readings
+                        'wifiReadings': filtered_readings # <--- 存入原始掃描
                     })
-                    file_stats['valid_records'] += 1
-                    file_info['valid_records'] += 1
+                    # (我們假設一次掃描就是一筆有效資料)
+                    file_stats['valid_scans'] += 1
+                    file_info['valid_scans_processed'] += 1
             
             file_info['processed_files'].append(file_stats)
             
@@ -90,8 +84,11 @@ def extract_wifi_data_with_filter(folder_path, target_ssids=None):
             file_stats['error'] = str(e)
             file_info['processed_files'].append(file_stats)
     
+    print(f"   [extract_and_filter]：處理了 {file_info['total_raw_records']} 個原始地點，")
+    print(f"   [extract_and_filter]：共提取了 {len(all_data)} 筆有效掃描資料。")
     return all_data, file_info
 
+# --- (parse_location_info 和 if __name__ == "__main__": 保持不變) ---
 def parse_location_info(name):
     """
     從位置名稱解析建築物、樓層和房間資訊
@@ -103,7 +100,6 @@ def parse_location_info(name):
     
     name = name.lower().strip()
     
-    # 解析建築物
     building = None
     if name.startswith('sea'):
         building = 'sea'
@@ -114,51 +110,35 @@ def parse_location_info(name):
     else:
         return None, None, None, None
     
-    # 解析樓層和房間
     floor = None
     room = None
     point_name = None
     
     if building:
-        # 移除建築物前綴
         remaining = name[3:]
-        
-        # 嘗試提取數字
         import re
         number_match = re.search(r'(\d+)', remaining)
         if number_match:
             number = int(number_match.group(1))
-            
-            # 判斷是房間號碼還是走廊編號
             if number >= 100:
-                # 房間號碼格式 (如 sea101, seb203)
                 room = number
                 floor = max(1, number // 100)
                 point_name = f"{building.upper()}{room:03d}"
             else:
-                # 走廊格式 (如 sea1, seb2) - 數字直接表示樓層
                 floor = number
-                room = None  # 走廊沒有房間號
+                room = None
                 point_name = f"{building.upper()}{floor}F_CORRIDOR"
     
     return building, floor, room, point_name
 
 if __name__ == "__main__":
-    # 測試函數
     folder_path = "../points/scan13"
     target_ssids = {'ap-nttu', 'ap2-nttu', 'eduroam', 'nttu'}
     
     extracted_data, file_info = extract_wifi_data_with_filter(folder_path, target_ssids)
-    print(f"提取了 {len(extracted_data)} 個參考點")
+    print(f"提取了 {len(extracted_data)} 筆掃描資料")
     print(f"處理的檔案資訊: {json.dumps(file_info, ensure_ascii=False, indent=2)}")
     
-    # 測試位置解析
-    for record in extracted_data[:5]:
-        building, floor, room, point_name = parse_location_info(record['name'])
-        print(f"Name: {record['name']}, Building: {building}, Floor: {floor}, Room: {room}, Point Name: {point_name}")
-    print(f"處理的檔案資訊: {json.dumps(file_info, ensure_ascii=False, indent=2)}")
-    
-    # 測試位置解析
     for record in extracted_data[:5]:
         building, floor, room, point_name = parse_location_info(record['name'])
         print(f"Name: {record['name']}, Building: {building}, Floor: {floor}, Room: {room}, Point Name: {point_name}")

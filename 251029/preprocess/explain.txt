@@ -1,0 +1,79 @@
+檔案功能說明 (preprocess 資料夾)
+
+這包 Python 腳本的核心任務是：將原始的 JSON 掃描資料，轉換為最終用於 HADNN (1+N 模型) 訓練所需的 NumPy 陣列 (.npy) 檔案。
+
+--------------------------------------------------
+
+1. preprocess/extract_and_filter.py
+   - 目的：資料提取與過濾
+   - 做了什麼：
+     - 這是整個流程的「第一步」。
+     - 它會去讀取原始資料夾 (如 scan13) 中的所有 .json 檔案。
+     - 關鍵功能 (v2)：它「不會」計算 WiFi 平均值。
+     - 相反地，它會保留「每一筆」原始的 WiFi 掃描紀錄 (wifiReadings)。
+     - 它會先過濾掉不是目標 SSID (如 ap-nttu, eduroam 等) 的訊號。
+     - 最後，它會回傳一個包含所有「單筆掃描」資料的列表，每筆資料都帶著它的座標 (x, y)、imageId 和過濾後的 WiFi 訊號列表。
+
+--------------------------------------------------
+
+2. preprocess/create_vector_format.py
+   - 目的：轉換為向量格式，並計算「公尺座標」
+   - 做了什麼：
+     - 這是流程的「第二步」，接收上一步的資料。
+     - 建立 BSSID 映射：它會掃描所有資料，找出「所有」出現過的 BSSID，並建立一個固定的排序列表 (bssid_mapping.csv)。
+     - 向量化：對於「每一筆」掃描資料，它會建立一個長度固定的 RSSI 向量 (例如 500 個 BSSID)。向量中會填入這筆掃描收到的訊號強度，如果某個 BSSID 沒掃到，就填 -100。
+     - ★ 核心功能 (v3) ★：
+       - 它會讀取一個 `transformation_data.json` 轉換設定檔。
+       - 利用這個設定檔中的矩陣和 `geopy` 函式庫，它會將原始的百分比座標 (x, y) 結合 imageId，「即時計算」出真實世界的「公尺座標」(x_meter, y_meter)。
+     - 輸出：
+       - `nttu_wifi_data.csv`：包含所有掃描資料，以及最重要的 `x_meter`, `y_meter` 和 `rss_...` 向量。
+       - `bssid_mapping.csv`：BSSID 與向量索引的對照表。
+
+--------------------------------------------------
+
+3. preprocess/hadnn_adapter.py
+   - 目的：為「1+N 模型」準備和分割資料
+   - 做了什麼：
+     - 這是流程的「第三步」，接收上一步產生的 `nttu_wifi_data.csv`。
+     - 定義群組 (define_groups)：這是客製化模型的地方。它會根據你的規則 (例如 1-3 樓合併為 se1, se2, se3，但 sea4, sea5 獨立) 來建立「群組」。
+     - 準備「模型一 (分類器)」資料：
+       - 它會將所有資料的 RSSI 向量 (X) 和它們對應的「群組 ID」(Y) 拿出來。
+       - 將 X (RSSI) 縮放到 [0, 1] 範圍。
+       - 分割成 `train_x_classifier.npy`, `test_y_classifier.npy` 等檔案。
+     - 準備「N 個模型 (回歸器)」資料：
+       - 它會「針對每一個群組」(例如 'se1', 'sea4'...) 獨立處理。
+       - 對於 'se1' 群組：它只拿出 'se1' 的 RSSI 向量 (X) 和「公尺座標」(Y)。
+       - ★ 核心功能 ★：它會對「公尺座標」進行「標準化 (StandardScaler)」，並將計算用的平均值(mean)和標準差(std)存入 `coord_scaler_config.json`。
+       - 分割成 `train_x_se1.npy`, `train_c_se1.npy`, `train_x_sea4.npy`, `train_c_sea4.npy`... 等多組檔案。
+
+--------------------------------------------------
+
+4. preprocess/run_preprocessing.py
+   - 目的：主執行檔 (Pipeline)
+   - 做了什麼：
+     - 這是你「唯一」需要執行的檔案。
+     - 它會按照正確的順序，自動呼叫上述 1, 2, 3 號腳本：
+       - 步驟 1: 執行 `extract_wifi_data_with_filter`
+       - 步驟 2-4: 執行 `create_vector_format` 並儲存 CSV
+       - 步驟 5: 執行 `prepare_split_data` (hadnn_adapter)
+     - 執行完這支程式，`processed_data` 和 `hadnn_data_split` 兩個資料夾內就會產生所有模型訓練所需的檔案。
+
+--------------------------------------------------
+
+5. preprocess/plot_point_density_by_image.py
+   - 目的：資料視覺化與分析工具 (非必要)
+   - 做了什麼：
+     - 這是一個輔助工具，用來檢查「原始資料」的採集狀況。
+     - 它會讀取原始的 JSON 檔案 (scan13)。
+     - 依據 `imageId` 分組，繪製出每個地圖影像上的「採點熱力圖」。
+     - 你可以用這個圖來看你在地圖上的哪些區域採的點比較多、哪些區域比較少。
+     - 它還會產生一個 `density_summary.csv`，統計每張地圖上的點位數量、WiFi 訊號數量，以及這些點位分別來自 SEA/SEB/SEC 的比例，這對於檢查合併地圖 (如 SE 1F) 的資料均衡性非常有用。
+
+--------------------------------------------------
+
+6. preprocess/extract_scan13_vector_format.py
+   - 目的：舊版或替代版的向量轉換腳本
+   - 做了什麼：
+     - 這個檔案「看起來」是 `create_vector_format.py` 的一個較舊版本。
+     - 關鍵差異：它「不會」計算 `x_meter` 和 `y_meter` (公尺座標)。它只會儲存原始的 `x`, `y` 座標。
+     - 在你目前「1+N」且需要公尺座標的架構下，這個檔案「應該沒有被使用」。你的主流程 (`run_preprocessing.py`) 是呼叫 `create_vector_format.py`。

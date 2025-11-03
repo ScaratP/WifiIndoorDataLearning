@@ -1,0 +1,32 @@
+--- Hyperparameters ---
+timestamp: 20251031_004507
+script_name: train_coordinate_regressors.py
+data_dir: hadnn_data_split
+config_dir: hadnn_data_split
+attention_units: 256
+num_heads: 8
+dense_units_1: 1024
+dense_units_2: 512
+dropout_rate: 0.3
+l2_reg: 0.0005
+learning_rate: 0.0001
+epochs: 300
+batch_size: 32
+early_stopping_patience: 25
+lr_reduce_patience: 10
+
+
+--- Training Results (All Groups) ---
+-----------------------------------------------------------------------------
+| 群組         | 平均定位誤差 (公尺)               | Epochs 運行       |
+-----------------------------------------------------------------------------
+| se1        | 34.74                     | 194             |
+| se2        | 34.55                     | 120             |
+| se3        | 37.39                     | 200             |
+| sea4       | 21.81                     | 300             |
+| sea5       | 21.77                     | 174             |
+| seb4       | 20.38                     | 300             |
+| sec4       | 26.23                     | 221             |
+| sec5       | 20.47                     | 88              |
+-----------------------------------------------------------------------------
+   所有 8 個有效群組的平均誤差: 27.17 公尺

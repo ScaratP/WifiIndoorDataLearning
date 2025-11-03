@@ -1,0 +1,29 @@
+--- Hyperparameters (Low Error Models) ---
+timestamp: 20251030_164027
+script_name: tune_low_error_models.py
+data_dir: hadnn_data_split
+config_dir: hadnn_data_split
+attention_units: 128
+num_heads: 4
+dense_units_1: 512
+dense_units_2: 256
+dropout_rate: 0.4
+l2_reg: 0.005
+learning_rate: 5e-05
+epochs: 800
+batch_size: 32
+early_stopping_patience: 25
+lr_reduce_patience: 10
+
+
+--- Training Results (Low Error Groups) ---
+-----------------------------------------------------
+| 群組         | 平均定位誤差 (公尺)               | Epochs 運行       |
+-----------------------------------------------------
+| sea4       | 21.78                     | 800             |
+| sea5       | 20.69                     | 800             |
+| seb4       | 21.03                     | 663             |
+| sec4       | 26.96                     | 502             |
+| sec5       | 20.00                     | 278             |
+-----------------------------------------------------
+   所有 5 個有效群組的平均誤差: 22.09 公尺
